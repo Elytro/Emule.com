@@ -43,6 +43,9 @@ export async function onRequest(context) {
     const commitMessage = message || 'Upload file via API';
     const filePath = path.startsWith('/') ? path.slice(1) : path;
 
+    // 仓库名格式 owner/repo，需要分别编码保留中间的 /
+    const repoEncoded = encodeRepoPath(repo);
+
     const headers = {
       'Authorization': `token ${GITHUB_TOKEN}`,
       'Accept': 'application/vnd.github.v3+json',
@@ -56,7 +59,7 @@ export async function onRequest(context) {
     let existingSha = null;
     try {
       const getRes = await fetch(
-        `https://api.github.com/repos/${encodeURIComponent(repo)}/contents/${encodeURIComponent(filePath)}?ref=${encodeURIComponent(branchName)}`,
+        `https://api.github.com/repos/${repoEncoded}/contents/${encodeURIComponent(filePath)}?ref=${encodeURIComponent(branchName)}`,
         { headers }
       );
       if (getRes.ok) {
@@ -80,7 +83,7 @@ export async function onRequest(context) {
     }
 
     // 创建或更新文件
-    const putUrl = `https://api.github.com/repos/${encodeURIComponent(repo)}/contents/${encodeURIComponent(filePath)}`;
+    const putUrl = `https://api.github.com/repos/${repoEncoded}/contents/${encodeURIComponent(filePath)}`;
     const putRes = await fetch(putUrl, {
       method: 'PUT',
       headers,
@@ -118,6 +121,11 @@ export async function onRequest(context) {
       { status: 500, headers: corsHeaders() }
     );
   }
+}
+
+function encodeRepoPath(repo) {
+  const parts = repo.split('/');
+  return parts.map(p => encodeURIComponent(p)).join('/');
 }
 
 function corsHeaders() {
