@@ -3,867 +3,620 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GitHub 文件上传</title>
+  <title>GitHub File Uploader</title>
   <style>
-    :root {
-      --bg: #f6f8fa;
-      --card: #ffffff;
-      --border: #d0d7de;
-      --text: #1f2328;
-      --text-secondary: #656d76;
-      --primary: #0969da;
-      --primary-hover: #0860ca;
-      --success: #1a7f37;
-      --danger: #cf222e;
-      --radius: 8px;
-      --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
-      --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
-    }
-
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #0d1117;
+      color: #c9d1d9;
       min-height: 100vh;
-      line-height: 1.6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-
     .container {
+      width: 100%;
       max-width: 640px;
-      margin: 0 auto;
-      padding: 40px 20px 60px;
+      padding: 24px;
     }
-
-    /* Header */
-    .header {
-      text-align: center;
-      margin-bottom: 32px;
-    }
-    .header .icon {
-      width: 48px;
-      height: 48px;
-      margin-bottom: 12px;
-      opacity: 0.9;
-    }
-    .header h1 {
-      font-size: 1.75rem;
-      font-weight: 700;
-      color: var(--text);
-    }
-    .header p {
-      color: var(--text-secondary);
-      font-size: 0.95rem;
-      margin-top: 4px;
-    }
-
-    /* Card */
     .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 28px;
-      margin-bottom: 20px;
-      box-shadow: var(--shadow);
-      transition: box-shadow 0.2s;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 36px;
     }
-    .card:hover { box-shadow: var(--shadow-lg); }
-
-    /* Form groups */
-    .form-group {
-      margin-bottom: 20px;
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 28px;
     }
-    .form-group:last-child { margin-bottom: 0; }
-    .form-label {
+    .logo svg { width: 32px; height: 32px; fill: #f0f6fc; }
+    .logo h1 { font-size: 22px; font-weight: 600; color: #f0f6fc; }
+    .form-group { margin-bottom: 20px; }
+    .label {
       display: block;
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--text);
+      font-size: 13px;
+      font-weight: 500;
+      color: #8b949e;
       margin-bottom: 6px;
     }
-    .form-hint {
-      font-size: 0.8rem;
-      color: var(--text-secondary);
-      margin-top: 4px;
-    }
-
-    /* Input */
-    .input-wrapper {
-      position: relative;
-    }
-    .input {
+    .input-wrapper { position: relative; }
+    .input-wrapper input {
       width: 100%;
       padding: 10px 14px;
-      font-size: 0.95rem;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
+      padding-right: 36px;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      color: #c9d1d9;
+      font-size: 14px;
       outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-      background: var(--card);
-      color: var(--text);
+      transition: border-color 0.2s;
     }
-    .input:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(9,105,218,0.15);
+    .input-wrapper input:focus { border-color: #58a6ff; }
+    .input-wrapper input::placeholder { color: #484f58; }
+    .clear-btn {
+      position: absolute;
+      right: 8px; top: 50%;
+      transform: translateY(-50%);
+      background: none; border: none;
+      color: #8b949e; cursor: pointer;
+      font-size: 18px; line-height: 1;
+      padding: 4px;
+      display: none;
     }
-    .input::placeholder { color: #a0a8b0; }
-
-    /* Dropdown */
+    .clear-btn.visible { display: block; }
     .dropdown {
       position: absolute;
       top: 100%;
-      left: 0;
-      right: 0;
+      left: 0; right: 0;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
       margin-top: 4px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow-lg);
       max-height: 240px;
       overflow-y: auto;
-      z-index: 100;
+      z-index: 10;
       display: none;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
     }
     .dropdown.show { display: block; }
     .dropdown-item {
       padding: 10px 14px;
       cursor: pointer;
-      font-size: 0.9rem;
-      border-bottom: 1px solid #f0f2f5;
+      font-size: 14px;
+      border-bottom: 1px solid #21262d;
       transition: background 0.15s;
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      gap: 8px;
     }
     .dropdown-item:last-child { border-bottom: none; }
-    .dropdown-item:hover, .dropdown-item.active { background: #edf4fd; }
-    .dropdown-item .repo-name { font-weight: 600; }
-    .dropdown-item .repo-desc {
-      font-size: 0.78rem;
-      color: var(--text-secondary);
-      max-width: 280px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .dropdown-empty {
-      padding: 16px;
-      text-align: center;
-      color: var(--text-secondary);
-      font-size: 0.85rem;
-    }
-    .dropdown-loading {
-      padding: 16px;
-      text-align: center;
-      color: var(--text-secondary);
-      font-size: 0.85rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-
-    /* Upload zone */
-    .upload-zone {
-      border: 2px dashed var(--border);
-      border-radius: var(--radius);
-      padding: 40px 20px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.25s;
-      background: #fafbfc;
-      position: relative;
-    }
-    .upload-zone:hover,
-    .upload-zone.drag-over {
-      border-color: var(--primary);
-      background: #edf4fd;
-    }
-    .upload-zone.drag-over {
-      border-style: solid;
-      background: #ddf0ff;
-    }
-    .upload-zone.has-file {
-      border-color: var(--success);
-      border-style: solid;
-      background: #f0faf4;
-    }
-    .upload-zone .upload-icon {
-      width: 40px;
-      height: 40px;
-      margin: 0 auto 12px;
-      opacity: 0.5;
-      transition: opacity 0.2s;
-    }
-    .upload-zone:hover .upload-icon,
-    .upload-zone.drag-over .upload-icon {
-      opacity: 0.8;
-    }
-    .upload-zone .upload-text {
-      font-size: 0.95rem;
-      color: var(--text-secondary);
-    }
-    .upload-zone .upload-text strong {
-      color: var(--primary);
-    }
-
-    /* File preview */
-    .file-preview {
-      display: none;
-      align-items: center;
-      gap: 12px;
-      margin-top: 16px;
-      padding: 14px 16px;
-      background: #f6f8fa;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-    }
-    .file-preview.show { display: flex; }
-    .file-preview .file-icon {
-      width: 36px;
-      height: 36px;
-      background: #eef1f5;
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      font-size: 1.1rem;
-    }
-    .file-preview .file-info {
-      flex: 1;
-      min-width: 0;
-    }
-    .file-preview .file-name {
-      font-weight: 600;
-      font-size: 0.9rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .file-preview .file-meta {
-      font-size: 0.78rem;
-      color: var(--text-secondary);
-      margin-top: 2px;
-    }
-    .file-preview .file-remove {
-      padding: 6px 8px;
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: var(--text-secondary);
-      font-size: 1.2rem;
-      line-height: 1;
-      border-radius: 4px;
-      transition: all 0.15s;
-    }
-    .file-preview .file-remove:hover {
-      color: var(--danger);
-      background: #ffebe9;
-    }
-
-    /* Button */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 10px 24px;
-      font-size: 0.95rem;
-      font-weight: 600;
-      border: 1px solid transparent;
-      border-radius: var(--radius);
-      cursor: pointer;
-      transition: all 0.2s;
-      white-space: nowrap;
-      text-decoration: none;
-    }
-    .btn-primary {
-      background: var(--primary);
-      color: #fff;
-      width: 100%;
-    }
-    .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
-    .btn-primary:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    /* Spinner */
-    .spinner {
+    .dropdown-item:hover, .dropdown-item.active { background: #1f6feb22; }
+    .dropdown-item .repo-name { color: #58a6ff; font-weight: 500; }
+    .dropdown-item .repo-desc { color: #8b949e; font-size: 12px; margin-left: auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+    .dropdown-item .repo-private { color: #8b949e; font-size: 11px; }
+    .loading-spinner {
       display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin 0.6s linear infinite;
-    }
-    .spinner-dark {
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(0,0,0,0.1);
-      border-top-color: var(--primary);
+      width: 14px; height: 14px;
+      border: 2px solid #30363d;
+      border-top-color: #58a6ff;
       border-radius: 50%;
       animation: spin 0.6s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Toast */
-    .toast-container {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+    .upload-zone {
+      border: 2px dashed #30363d;
+      border-radius: 12px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: #0d1117;
+      position: relative;
     }
-    .toast {
-      padding: 14px 18px;
-      border-radius: var(--radius);
-      color: #fff;
-      font-size: 0.9rem;
-      font-weight: 500;
-      box-shadow: var(--shadow-lg);
-      animation: slideIn 0.3s ease;
-      max-width: 380px;
-      display: flex;
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: #58a6ff;
+      background: #1f6feb0a;
+    }
+    .upload-zone.has-file {
+      border-color: #3fb950;
+      border-style: solid;
+      background: #2ea0430a;
+    }
+    .upload-icon { margin-bottom: 12px; }
+    .upload-icon svg { width: 40px; height: 40px; stroke: #8b949e; }
+    .upload-text { font-size: 14px; color: #8b949e; }
+    .upload-text strong { color: #58a6ff; }
+    .upload-hint { font-size: 12px; color: #484f58; margin-top: 6px; }
+
+    .file-info {
+      display: none;
       align-items: center;
       gap: 10px;
+      margin-top: 12px;
+      padding: 10px 14px;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 8px;
     }
-    .toast-success { background: var(--success); }
-    .toast-error { background: var(--danger); }
-    .toast-warning { background: #bf8700; }
-    .toast-info { background: var(--primary); }
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateX(80px); }
-      to   { opacity: 1; transform: translateX(0); }
+    .file-info.show { display: flex; }
+    .file-info .file-icon { font-size: 20px; }
+    .file-info .file-name { flex: 1; font-size: 13px; color: #f0f6fc; word-break: break-all; }
+    .file-info .file-size { font-size: 12px; color: #8b949e; white-space: nowrap; }
+    .file-info .remove-file {
+      background: none; border: none;
+      color: #f85149; cursor: pointer;
+      font-size: 18px; padding: 2px 6px;
     }
 
-    /* Result link */
-    .result-box {
-      display: none;
-      margin-top: 16px;
-      padding: 14px 16px;
-      background: #f0faf4;
-      border: 1px solid #b3e0c2;
-      border-radius: var(--radius);
-      font-size: 0.9rem;
+    .branch-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    .result-box.show { display: block; }
-    .result-box a {
-      color: var(--primary);
+    .branch-wrapper span {
+      font-size: 14px;
+      color: #8b949e;
+      white-space: nowrap;
+    }
+    .branch-wrapper input {
+      flex: 1;
+      padding: 10px 14px;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      color: #c9d1d9;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .branch-wrapper input:focus { border-color: #58a6ff; }
+
+    .btn {
+      width: 100%;
+      padding: 12px 20px;
+      background: #238636;
+      border: 1px solid #2ea043;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 15px;
       font-weight: 600;
-      word-break: break-all;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 24px;
+    }
+    .btn:hover { background: #2ea043; }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .btn.loading {
+      pointer-events: none;
+      opacity: 0.7;
     }
 
-    /* Responsive */
-    @media (max-width: 640px) {
-      .container { padding: 24px 12px 40px; }
-      .card { padding: 20px 16px; }
-      .header h1 { font-size: 1.4rem; }
-      .upload-zone { padding: 30px 14px; }
-      .toast-container {
-        left: 12px;
-        right: 12px;
-        top: 12px;
-      }
-      .toast { max-width: 100%; }
-      .dropdown-item { flex-direction: column; align-items: flex-start; gap: 2px; }
-      .dropdown-item .repo-desc { max-width: 100%; }
+    .status {
+      margin-top: 16px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      display: none;
+    }
+    .status.show { display: block; }
+    .status.success { background: #2ea0431a; border: 1px solid #2ea043; color: #3fb950; }
+    .status.error { background: #f851491a; border: 1px solid #f85149; color: #f85149; }
+    .status.info { background: #1f6feb1a; border: 1px solid #1f6feb; color: #58a6ff; }
+
+    .status a { color: #58a6ff; text-decoration: underline; }
+
+    .path-hint {
+      font-size: 12px;
+      color: #484f58;
+      margin-top: 4px;
+      margin-left: 4px;
+    }
+
+    @media (max-width: 500px) {
+      .card { padding: 20px; }
+      .dropdown-item .repo-desc { display: none; }
     }
   </style>
 </head>
 <body>
-  <div class="toast-container" id="toastContainer"></div>
-
   <div class="container">
-    <!-- Header -->
-    <div class="header">
-      <svg class="icon" viewBox="0 0 98 96" xmlns="http://www.w3.org/2000/svg">
-        <path fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.362 19.412-6.518 33.405-24.934 33.405-46.691C97.707 22 75.788 0 48.854 0z" fill="#24292f"/>
-      </svg>
-      <h1>GitHub 文件上传</h1>
-      <p>选择仓库，拖拽或点击上传文件</p>
-    </div>
-
-    <!-- Repository Selection -->
     <div class="card">
+      <div class="logo">
+        <svg viewBox="0 0 16 16" version="1.1" width="32" height="32">
+          <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+        </svg>
+        <h1>GitHub File Uploader</h1>
+      </div>
+
+      <!-- 仓库选择 -->
       <div class="form-group">
-        <label class="form-label" for="repoInput">选择仓库</label>
-        <div class="input-wrapper">
+        <label class="label">选择仓库</label>
+        <div class="input-wrapper" id="repoInputWrapper">
           <input
             type="text"
             id="repoInput"
-            class="input"
-            placeholder="输入仓库名进行搜索，或手动输入完整仓库名..."
+            placeholder="输入仓库名搜索，如 elytro/my-repo"
             autocomplete="off"
           />
-          <div class="dropdown" id="repoDropdown">
-            <div class="dropdown-loading" id="dropdownLoading">
-              <span class="spinner-dark"></span> 加载仓库列表...
-            </div>
-            <div class="dropdown-empty" id="dropdownEmpty" style="display:none;">未找到匹配的仓库</div>
-          </div>
+          <button class="clear-btn" id="clearRepoBtn" type="button">&times;</button>
+          <div class="dropdown" id="repoDropdown"></div>
         </div>
-        <p class="form-hint">支持模糊搜索，点击下拉项选择，或直接输入仓库名</p>
       </div>
-    </div>
 
-    <!-- File Path -->
-    <div class="card">
+      <!-- 分支 -->
       <div class="form-group">
-        <label class="form-label" for="filePath">文件路径（可选）</label>
+        <label class="label">目标分支</label>
+        <div class="branch-wrapper">
+          <input type="text" id="branchInput" placeholder="main" value="main" />
+        </div>
+      </div>
+
+      <!-- 文件路径 -->
+      <div class="form-group">
+        <label class="label">目标路径 <span class="path-hint">如 folder/file.txt 或 file.txt</span></label>
         <input
           type="text"
-          id="filePath"
-          class="input"
-          placeholder="例如：docs/readme.md（留空则使用文件名）"
+          id="pathInput"
+          placeholder="path/to/file.txt"
+          style="width:100%;padding:10px 14px;background:#0d1117;border:1px solid #30363d;border-radius:8px;color:#c9d1d9;font-size:14px;outline:none;"
         />
       </div>
-      <div class="form-group" style="display:flex; gap:12px;">
-        <div style="flex:1;">
-          <label class="form-label" for="branchName">分支</label>
-          <input type="text" id="branchName" class="input" value="main" placeholder="main" />
-        </div>
-        <div style="flex:1;">
-          <label class="form-label" for="commitMsg">提交信息（可选）</label>
-          <input type="text" id="commitMsg" class="input" placeholder="默认：Upload 文件名" />
-        </div>
-      </div>
-    </div>
 
-    <!-- Upload Zone -->
-    <div class="card">
+      <!-- 文件上传区域 -->
       <div class="form-group">
-        <label class="form-label">选择文件</label>
+        <label class="label">选择文件</label>
         <div class="upload-zone" id="uploadZone">
-          <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
-          </svg>
-          <p class="upload-text">拖拽文件到此处，或 <strong>点击选择文件</strong></p>
-          <input type="file" id="fileInput" style="display:none;" />
-        </div>
-        <div class="file-preview" id="filePreview">
-          <div class="file-icon" id="fileIcon">📄</div>
-          <div class="file-info">
-            <div class="file-name" id="fileName"></div>
-            <div class="file-meta" id="fileMeta"></div>
+          <div class="upload-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
           </div>
-          <button class="file-remove" id="fileRemove" title="移除文件">&times;</button>
+          <div class="upload-text">拖拽文件到此处，或 <strong>点击浏览</strong></div>
+          <div class="upload-hint">文件已存在将自动覆盖</div>
         </div>
-        <div class="result-box" id="resultBox"></div>
+        <div class="file-info" id="fileInfo">
+          <span class="file-icon">📄</span>
+          <span class="file-name" id="fileName"></span>
+          <span class="file-size" id="fileSize"></span>
+          <button class="remove-file" id="removeFileBtn" type="button">&times;</button>
+        </div>
+        <input type="file" id="fileInput" style="display:none" />
       </div>
-    </div>
 
-    <!-- Upload Button -->
-    <button class="btn btn-primary" id="uploadBtn" disabled>
-      <span id="btnText">上传文件</span>
-      <span id="btnSpinner" style="display:none;" class="spinner"></span>
-    </button>
+      <!-- 提交信息 -->
+      <div class="form-group">
+        <label class="label">提交信息</label>
+        <input
+          type="text"
+          id="commitMsg"
+          placeholder="Upload file via API"
+          value="Upload file via API"
+          style="width:100%;padding:10px 14px;background:#0d1117;border:1px solid #30363d;border-radius:8px;color:#c9d1d9;font-size:14px;outline:none;"
+        />
+      </div>
+
+      <button class="btn" id="uploadBtn" disabled>
+        <span id="btnText">上传文件</span>
+        <span class="loading-spinner" id="btnSpinner" style="display:none;"></span>
+      </button>
+
+      <div class="status" id="statusBox"></div>
+    </div>
   </div>
 
   <script>
-    (function() {
-      // ──────────────────────────── State ────────────────────────────
-      let allRepos = [];
-      let selectedFile = null;
-      let isUploading = false;
-      let dropdownIndex = -1;
-
-      // ──────────────────────────── DOM Refs ────────────────────────────
+    (function () {
+      // DOM 元素
       const repoInput = document.getElementById('repoInput');
       const repoDropdown = document.getElementById('repoDropdown');
-      const dropdownLoading = document.getElementById('dropdownLoading');
-      const dropdownEmpty = document.getElementById('dropdownEmpty');
-      const filePathInput = document.getElementById('filePath');
-      const branchInput = document.getElementById('branchName');
-      const commitMsgInput = document.getElementById('commitMsg');
+      const clearRepoBtn = document.getElementById('clearRepoBtn');
+      const branchInput = document.getElementById('branchInput');
+      const pathInput = document.getElementById('pathInput');
       const uploadZone = document.getElementById('uploadZone');
       const fileInput = document.getElementById('fileInput');
-      const filePreview = document.getElementById('filePreview');
-      const fileIcon = document.getElementById('fileIcon');
+      const fileInfo = document.getElementById('fileInfo');
       const fileName = document.getElementById('fileName');
-      const fileMeta = document.getElementById('fileMeta');
-      const fileRemove = document.getElementById('fileRemove');
+      const fileSize = document.getElementById('fileSize');
+      const removeFileBtn = document.getElementById('removeFileBtn');
+      const commitMsg = document.getElementById('commitMsg');
       const uploadBtn = document.getElementById('uploadBtn');
       const btnText = document.getElementById('btnText');
       const btnSpinner = document.getElementById('btnSpinner');
-      const resultBox = document.getElementById('resultBox');
-      const toastContainer = document.getElementById('toastContainer');
+      const statusBox = document.getElementById('statusBox');
 
-      // ──────────────────────────── Toast ────────────────────────────
-      function showToast(message, type) {
-        type = type || 'info';
-        const toast = document.createElement('div');
-        toast.className = 'toast toast-' + type;
-        toast.textContent = message;
-        toastContainer.appendChild(toast);
-        setTimeout(function() {
-          toast.style.opacity = '0';
-          toast.style.transform = 'translateX(80px)';
-          toast.style.transition = 'all 0.3s';
-          setTimeout(function() { toast.remove(); }, 300);
-        }, 3500);
+      let selectedFile = null;
+      let selectedRepo = null;
+      let searchTimer = null;
+      let dropdownIndex = -1;
+
+      // 格式化文件大小
+      function fmtSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
       }
 
-      // ──────────────────────────── Format file size ────────────────────────────
-      function formatSize(bytes) {
-        if (bytes === 0) return '0 B';
-        var units = ['B', 'KB', 'MB', 'GB'];
-        var i = Math.floor(Math.log(bytes) / Math.log(1024));
-        i = Math.min(i, units.length - 1);
-        return (bytes / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 1) + ' ' + units[i];
+      // 显示状态
+      function showStatus(msg, type) {
+        statusBox.textContent = msg;
+        statusBox.className = 'status show ' + type;
       }
 
-      // ──────────────────────────── Get file icon ────────────────────────────
-      function getFileIcon(name) {
-        var ext = name.split('.').pop().toLowerCase();
-        var map = {
-          js: '📜', ts: '📘', jsx: '⚛️', tsx: '⚛️',
-          html: '🌐', css: '🎨', scss: '💅', less: '💅',
-          json: '📋', xml: '📋', yaml: '⚙️', yml: '⚙️', toml: '⚙️',
-          md: '📝', txt: '📄', log: '📄',
-          png: '🖼️', jpg: '🖼️', jpeg: '🖼️', gif: '🖼️', svg: '🖼️', webp: '🖼️', ico: '🖼️',
-          py: '🐍', rb: '💎', php: '🐘', go: '🔵', rs: '🦀', java: '☕', c: '⚡', cpp: '⚡', h: '⚡',
-          sh: '🖥️', bash: '🖥️', zsh: '🖥️', bat: '🖥️', ps1: '🖥️',
-          pdf: '📕', doc: '📘', docx: '📘', xls: '📊', xlsx: '📊', ppt: '📊', pptx: '📊',
-          zip: '📦', tar: '📦', gz: '📦', rar: '📦', '7z': '📦',
-          mp3: '🎵', wav: '🎵', mp4: '🎬', mov: '🎬', avi: '🎬',
-        };
-        return map[ext] || '📄';
+      function hideStatus() {
+        statusBox.className = 'status';
+        statusBox.textContent = '';
       }
 
-      // ──────────────────────────── Update upload button state ────────────────────────────
+      // 更新上传按钮状态
       function updateUploadBtn() {
-        var repoVal = repoInput.value.trim();
-        uploadBtn.disabled = !repoVal || !selectedFile || isUploading;
+        const repo = repoInput.value.trim();
+        uploadBtn.disabled = !(repo && selectedFile && pathInput.value.trim());
       }
 
-      // ──────────────────────────── Show file preview ────────────────────────────
-      function showFilePreview(file) {
-        selectedFile = file;
-        fileIcon.textContent = getFileIcon(file.name);
-        fileName.textContent = file.name;
-        fileMeta.textContent = formatSize(file.size);
-        filePreview.classList.add('show');
-        uploadZone.classList.add('has-file');
-        updateUploadBtn();
+      // Base64 编码文件（浏览器端）
+      function fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const base64 = reader.result.split(',')[1];
+            resolve(base64);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      }
 
-        // Auto-fill file path
-        if (!filePathInput.value.trim()) {
-          filePathInput.value = file.name;
+      // 搜索仓库
+      async function searchRepos(query) {
+        try {
+          const res = await fetch('/api/repos?q=' + encodeURIComponent(query));
+          if (!res.ok) throw new Error('搜索失败');
+          const data = await res.json();
+          return data.repos || [];
+        } catch (e) {
+          console.error('搜索仓库失败:', e);
+          return [];
         }
       }
 
-      function clearFile() {
-        selectedFile = null;
-        fileInput.value = '';
-        filePreview.classList.remove('show');
-        uploadZone.classList.remove('has-file');
-        resultBox.classList.remove('show');
-        resultBox.innerHTML = '';
-        updateUploadBtn();
-      }
-
-      // ──────────────────────────── Fetch repos ────────────────────────────
-      function fetchRepos() {
-        dropdownLoading.style.display = 'flex';
-        dropdownEmpty.style.display = 'none';
-        repoDropdown.classList.add('show');
-
-        fetch('/api/repos')
-          .then(function(res) {
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-            return res.json();
-          })
-          .then(function(data) {
-            allRepos = data;
-            dropdownLoading.style.display = 'none';
-            filterRepos(repoInput.value);
-          })
-          .catch(function(err) {
-            dropdownLoading.style.display = 'none';
-            dropdownEmpty.textContent = '加载仓库列表失败：' + err.message;
-            dropdownEmpty.style.display = 'block';
-            showToast('无法加载仓库列表：' + err.message, 'error');
-          });
-      }
-
-      // ──────────────────────────── Fuzzy match ────────────────────────────
-      function fuzzyMatch(pattern, str) {
-        pattern = pattern.toLowerCase();
-        str = str.toLowerCase();
-        var pi = 0;
-        for (var si = 0; si < str.length && pi < pattern.length; si++) {
-          if (pattern[pi] === str[si]) pi++;
-        }
-        return pi === pattern.length;
-      }
-
-      function scoreMatch(pattern, str) {
-        // Lower score = better match (earlier match)
-        pattern = pattern.toLowerCase();
-        str = str.toLowerCase();
-        var pi = 0;
-        var firstMatch = -1;
-        for (var si = 0; si < str.length && pi < pattern.length; si++) {
-          if (pattern[pi] === str[si]) {
-            if (firstMatch === -1) firstMatch = si;
-            pi++;
-          }
-        }
-        if (pi !== pattern.length) return Infinity;
-        // Prioritize: starts with > contains > fuzzy
-        if (str.indexOf(pattern) === 0) return 0;
-        if (str.indexOf(pattern) > 0) return 1;
-        return firstMatch + 2;
-      }
-
-      // ──────────────────────────── Filter & render dropdown ────────────────────────────
-      function filterRepos(query) {
-        var q = (query || '').trim();
-        var items;
-
-        if (!q) {
-          // Show all repos (sorted by name)
-          items = allRepos.slice().sort(function(a, b) {
-            return a.name.localeCompare(b.name);
-          });
-        } else {
-          // Fuzzy filter and sort by match quality
-          items = allRepos
-            .filter(function(r) { return fuzzyMatch(q, r.name); })
-            .sort(function(a, b) {
-              return scoreMatch(q, a.name) - scoreMatch(q, b.name);
-            });
-        }
-
-        // Clear old items
-        var oldItems = repoDropdown.querySelectorAll('.dropdown-item');
-        oldItems.forEach(function(el) { el.remove(); });
-
+      // 渲染仓库下拉
+      function renderDropdown(repos) {
+        repoDropdown.innerHTML = '';
         dropdownIndex = -1;
 
-        if (items.length === 0) {
-          dropdownEmpty.style.display = 'block';
-        } else {
-          dropdownEmpty.style.display = 'none';
-          items.slice(0, 30).forEach(function(repo) {
-            var div = document.createElement('div');
-            div.className = 'dropdown-item';
-            div.innerHTML =
-              '<span class="repo-name">' + escapeHtml(repo.name) + '</span>' +
-              (repo.description ? '<span class="repo-desc">' + escapeHtml(repo.description) + '</span>' : '');
-            div.addEventListener('click', function() {
-              repoInput.value = repo.name;
-              repoDropdown.classList.remove('show');
-              updateUploadBtn();
-            });
-            repoDropdown.appendChild(div);
-          });
+        if (repos.length === 0) {
+          repoDropdown.innerHTML = '<div class="dropdown-item" style="color:#8b949e;cursor:default;">未找到仓库</div>';
+          repoDropdown.classList.add('show');
+          return;
         }
+
+        repos.forEach((repo, i) => {
+          const div = document.createElement('div');
+          div.className = 'dropdown-item';
+          div.innerHTML = `
+            <span class="repo-name">${escapeHtml(repo.full_name)}</span>
+            ${repo.private ? '<span class="repo-private">🔒</span>' : ''}
+            <span class="repo-desc">${escapeHtml(repo.description || '')}</span>
+          `;
+          div.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            selectRepo(repo);
+          });
+          div.dataset.index = i;
+          repoDropdown.appendChild(div);
+        });
+
+        repoDropdown.classList.add('show');
       }
 
       function escapeHtml(str) {
-        var div = document.createElement('div');
+        const div = document.createElement('div');
         div.textContent = str;
         return div.innerHTML;
       }
 
-      // ──────────────────────────── Repo input events ────────────────────────────
-      repoInput.addEventListener('input', function() {
+      function selectRepo(repo) {
+        selectedRepo = repo;
+        repoInput.value = repo.full_name;
+        branchInput.value = repo.default_branch || 'main';
+        repoDropdown.classList.remove('show');
+        clearRepoBtn.classList.add('visible');
         updateUploadBtn();
-        filterRepos(repoInput.value);
-        repoDropdown.classList.add('show');
-        dropdownLoading.style.display = 'none';
+      }
+
+      // 仓库输入事件
+      repoInput.addEventListener('input', function () {
+        const val = this.value.trim();
+        clearRepoBtn.classList.toggle('visible', val.length > 0);
+        selectedRepo = null;
+
+        if (val.includes('/') && val.length > 2) {
+          clearTimeout(searchTimer);
+          searchTimer = setTimeout(async () => {
+            const repos = await searchRepos(val);
+            renderDropdown(repos);
+          }, 400);
+        } else if (val.length === 0) {
+          clearTimeout(searchTimer);
+          searchTimer = setTimeout(async () => {
+            const repos = await searchRepos('');
+            if (repos.length > 0) renderDropdown(repos);
+          }, 300);
+        } else {
+          repoDropdown.classList.remove('show');
+        }
+        updateUploadBtn();
       });
 
-      repoInput.addEventListener('focus', function() {
-        if (allRepos.length === 0) {
-          fetchRepos();
-        } else {
-          filterRepos(repoInput.value);
-          repoDropdown.classList.add('show');
-          dropdownLoading.style.display = 'none';
+      repoInput.addEventListener('focus', function () {
+        const val = this.value.trim();
+        if (!val) {
+          searchRepos('').then(repos => {
+            if (repos.length > 0) renderDropdown(repos);
+          });
         }
       });
 
-      // Keyboard navigation for dropdown
-      repoInput.addEventListener('keydown', function(e) {
-        var items = repoDropdown.querySelectorAll('.dropdown-item');
+      // 键盘导航
+      repoInput.addEventListener('keydown', function (e) {
+        const items = repoDropdown.querySelectorAll('.dropdown-item:not([style*="cursor:default"])');
         if (!repoDropdown.classList.contains('show') || items.length === 0) return;
 
         if (e.key === 'ArrowDown') {
           e.preventDefault();
           dropdownIndex = Math.min(dropdownIndex + 1, items.length - 1);
-          updateDropdownHighlight(items);
+          updateDropdownActive(items);
         } else if (e.key === 'ArrowUp') {
           e.preventDefault();
           dropdownIndex = Math.max(dropdownIndex - 1, 0);
-          updateDropdownHighlight(items);
-        } else if (e.key === 'Enter') {
+          updateDropdownActive(items);
+        } else if (e.key === 'Enter' && dropdownIndex >= 0) {
           e.preventDefault();
-          if (dropdownIndex >= 0 && items[dropdownIndex]) {
-            items[dropdownIndex].click();
-          } else {
-            repoDropdown.classList.remove('show');
-          }
+          items[dropdownIndex].click();
         } else if (e.key === 'Escape') {
           repoDropdown.classList.remove('show');
         }
       });
 
-      function updateDropdownHighlight(items) {
-        items.forEach(function(item, i) {
+      function updateDropdownActive(items) {
+        items.forEach((item, i) => {
           item.classList.toggle('active', i === dropdownIndex);
+          if (i === dropdownIndex) item.scrollIntoView({ block: 'nearest' });
         });
-        if (dropdownIndex >= 0 && items[dropdownIndex]) {
-          items[dropdownIndex].scrollIntoView({ block: 'nearest' });
-        }
       }
 
-      // Close dropdown on outside click
-      document.addEventListener('click', function(e) {
-        if (!repoInput.contains(e.target) && !repoDropdown.contains(e.target)) {
+      // 点击外部关闭下拉
+      document.addEventListener('click', function (e) {
+        if (!document.getElementById('repoInputWrapper').contains(e.target)) {
           repoDropdown.classList.remove('show');
         }
       });
 
-      // ──────────────────────────── File input events ────────────────────────────
-      uploadZone.addEventListener('click', function(e) {
-        if (e.target === fileRemove) return;
+      clearRepoBtn.addEventListener('click', function () {
+        repoInput.value = '';
+        selectedRepo = null;
+        repoDropdown.classList.remove('show');
+        this.classList.remove('visible');
+        updateUploadBtn();
+        repoInput.focus();
+      });
+
+      // 文件选择
+      uploadZone.addEventListener('click', function () {
         fileInput.click();
       });
 
-      fileInput.addEventListener('change', function() {
-        if (fileInput.files && fileInput.files[0]) {
-          var file = fileInput.files[0];
-          // Check size: EdgeOne edge function has ~1MB body limit
-          if (file.size > 800 * 1024) {
-            showToast('文件大小 ' + formatSize(file.size) + ' 可能超过上传限制（~800KB），上传可能失败', 'warning');
-          }
-          showFilePreview(file);
+      fileInput.addEventListener('change', function () {
+        if (this.files.length > 0) {
+          setFile(this.files[0]);
         }
       });
 
-      fileRemove.addEventListener('click', function(e) {
+      // 拖拽上传
+      uploadZone.addEventListener('dragover', function (e) {
+        e.preventDefault();
+        this.classList.add('dragover');
+      });
+
+      uploadZone.addEventListener('dragleave', function (e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+      });
+
+      uploadZone.addEventListener('drop', function (e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+        if (e.dataTransfer.files.length > 0) {
+          setFile(e.dataTransfer.files[0]);
+        }
+      });
+
+      function setFile(file) {
+        selectedFile = file;
+        fileName.textContent = file.name;
+        fileSize.textContent = fmtSize(file.size);
+        fileInfo.classList.add('show');
+        uploadZone.classList.add('has-file');
+
+        // 自动填充路径（如果为空）
+        if (!pathInput.value.trim()) {
+          pathInput.value = file.name;
+        }
+
+        updateUploadBtn();
+      }
+
+      removeFileBtn.addEventListener('click', function (e) {
         e.stopPropagation();
-        clearFile();
+        selectedFile = null;
+        fileInput.value = '';
+        fileInfo.classList.remove('show');
+        uploadZone.classList.remove('has-file');
+        updateUploadBtn();
       });
 
-      // ──────────────────────────── Drag & Drop ────────────────────────────
-      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(function(evtName) {
-        uploadZone.addEventListener(evtName, function(e) {
-          e.preventDefault();
-          e.stopPropagation();
-        });
-      });
+      // 路径输入
+      pathInput.addEventListener('input', updateUploadBtn);
+      branchInput.addEventListener('input', updateUploadBtn);
 
-      uploadZone.addEventListener('dragenter', function() {
-        uploadZone.classList.add('drag-over');
-      });
+      // 上传
+      uploadBtn.addEventListener('click', async function () {
+        if (this.disabled || !selectedFile) return;
 
-      uploadZone.addEventListener('dragover', function() {
-        uploadZone.classList.add('drag-over');
-      });
-
-      uploadZone.addEventListener('dragleave', function(e) {
-        if (!uploadZone.contains(e.relatedTarget)) {
-          uploadZone.classList.remove('drag-over');
-        }
-      });
-
-      uploadZone.addEventListener('drop', function(e) {
-        uploadZone.classList.remove('drag-over');
-        var files = e.dataTransfer.files;
-        if (files && files[0]) {
-          var file = files[0];
-          if (file.size > 800 * 1024) {
-            showToast('文件大小 ' + formatSize(file.size) + ' 可能超过上传限制（~800KB），上传可能失败', 'warning');
-          }
-          showFilePreview(file);
-        }
-      });
-
-      // ──────────────────────────── Upload ────────────────────────────
-      uploadBtn.addEventListener('click', function() {
-        if (isUploading) return;
-        if (!selectedFile) {
-          showToast('请先选择文件', 'warning');
-          return;
-        }
-
-        var repo = repoInput.value.trim();
-        if (!repo) {
-          showToast('请输入或选择仓库名', 'warning');
-          return;
-        }
-
-        isUploading = true;
-        uploadBtn.disabled = true;
+        hideStatus();
+        this.disabled = true;
+        this.classList.add('loading');
         btnText.textContent = '上传中...';
         btnSpinner.style.display = 'inline-block';
-        resultBox.classList.remove('show');
 
-        var fd = new FormData();
-        fd.append('repo', repo);
-        fd.append('file', selectedFile);
-        fd.append('path', filePathInput.value.trim() || selectedFile.name);
-        fd.append('branch', branchInput.value.trim() || 'main');
-        var msg = commitMsgInput.value.trim();
-        if (msg) fd.append('message', msg);
+        try {
+          const fileBase64 = await fileToBase64(selectedFile);
+          const payload = {
+            repo: repoInput.value.trim(),
+            branch: branchInput.value.trim() || 'main',
+            path: pathInput.value.trim(),
+            content: fileBase64,
+            message: commitMsg.value.trim() || 'Upload file via API',
+          };
 
-        fetch('/api/upload', {
-          method: 'POST',
-          body: fd
-        })
-          .then(function(res) {
-            return res.json().then(function(data) {
-              return { status: res.status, data: data };
-            });
-          })
-          .then(function(result) {
-            isUploading = false;
-            btnText.textContent = '上传文件';
-            btnSpinner.style.display = 'none';
-            uploadBtn.disabled = false;
-
-            if (result.status >= 200 && result.status < 300 && result.data.content) {
-              var action = result.data.overwritten ? '文件覆盖成功！' : '文件上传成功！';
-              var icon = result.data.overwritten ? '🔄' : '✅';
-              showToast(action, 'success');
-              resultBox.innerHTML =
-                icon + ' ' + action + '<br>' +
-                '文件路径：<strong>' + escapeHtml(result.data.content.path) + '</strong><br>' +
-                '查看链接：<a href="' + result.data.content.html_url + '" target="_blank" rel="noopener">' +
-                result.data.content.html_url + '</a>';
-              resultBox.classList.add('show');
-            } else if (result.status === 422) {
-              var msg = (result.data && result.data.message) || '请求无效';
-              showToast('上传失败：' + msg, 'error');
-              resultBox.innerHTML = '❌ 上传失败：' + escapeHtml(msg);
-              resultBox.classList.add('show');
-            } else {
-              var errMsg = (result.data && result.data.message) || ('HTTP ' + result.status);
-              showToast('上传失败：' + errMsg, 'error');
-              resultBox.innerHTML = '❌ 上传失败：' + escapeHtml(errMsg);
-              resultBox.classList.add('show');
-            }
-          })
-          .catch(function(err) {
-            isUploading = false;
-            btnText.textContent = '上传文件';
-            btnSpinner.style.display = 'none';
-            uploadBtn.disabled = false;
-            showToast('网络错误：' + err.message, 'error');
+          const res = await fetch('/api/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
           });
-      });
 
-      // ──────────────────────────── Init ────────────────────────────
-      updateUploadBtn();
+          const result = await res.json();
+
+          if (res.ok) {
+            const actionText = result.overwritten ? '已覆盖' : '已创建';
+            let msg = `✅ 文件 ${actionText}：${result.path}`;
+            if (result.url) {
+              msg += ` — <a href="${result.url}" target="_blank">查看文件</a>`;
+            }
+            showStatus(msg, 'success');
+          } else {
+            showStatus('❌ 上传失败：' + (result.error || '未知错误'), 'error');
+          }
+        } catch (e) {
+          showStatus('❌ 网络错误：' + e.message, 'error');
+        } finally {
+          this.disabled = false;
+          this.classList.remove('loading');
+          btnText.textContent = '上传文件';
+          btnSpinner.style.display = 'none';
+          updateUploadBtn();
+        }
+      });
     })();
   </script>
 </body>
