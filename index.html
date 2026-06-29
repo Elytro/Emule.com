@@ -4,384 +4,469 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GitHub Upload</title>
+  <link href="https://apps.bdimg.com/libs/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://apps.bdimg.com/libs/fontawesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
   <style>
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
-      background: #fff;
-      color: #1a1a1a;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      -webkit-font-smoothing: antialiased;
+      background: #f5f5f5;
+      font-family: "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
     }
-
-    .container { width: 100%; max-width: 520px; padding: 40px 24px; }
-
-    .header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 40px;
+    .upload-wrap {
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 40px 15px;
     }
-    .header h1 { font-size: 20px; font-weight: 500; letter-spacing: -0.3px; }
-    .header svg { width: 20px; height: 20px; }
-
-    .field { margin-bottom: 24px; }
-    .field-label {
-      display: block;
-      font-size: 12px;
+    .upload-wrap .page-header {
+      margin-top: 0;
+      padding-bottom: 12px;
+    }
+    .upload-wrap .page-header h2 {
+      font-size: 22px;
       font-weight: 500;
-      color: #999;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 8px;
     }
-
-    .input {
-      width: 100%;
-      height: 44px;
-      padding: 0 14px;
-      border: 1px solid #e5e5e5;
-      border-radius: 6px;
-      font-size: 14px;
-      color: #1a1a1a;
-      background: #fff;
-      outline: none;
-      transition: border-color 0.15s, box-shadow 0.15s;
-      font-family: inherit;
-    }
-    .input:focus { border-color: #1a1a1a; box-shadow: 0 0 0 3px rgba(0,0,0,0.04); }
-    .input::placeholder { color: #ccc; }
-
-    .input-wrap { position: relative; }
-    .input-wrap .input { padding-right: 36px; }
-    .input-clear {
-      position: absolute;
-      right: 10px; top: 50%;
-      transform: translateY(-50%);
-      background: none; border: none;
-      color: #bbb; cursor: pointer;
-      font-size: 16px; line-height: 1;
-      padding: 4px;
-      display: none;
-    }
-    .input-clear.on { display: block; }
-
-    .dropdown {
-      position: absolute;
-      top: calc(100% + 4px);
-      left: 0; right: 0;
-      background: #fff;
-      border: 1px solid #e5e5e5;
-      border-radius: 6px;
-      max-height: 220px;
-      overflow-y: auto;
-      z-index: 10;
-      display: none;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
-    }
-    .dropdown.on { display: block; }
-    .dropdown-item {
-      padding: 10px 14px;
-      cursor: pointer;
+    .upload-wrap .page-header small {
       font-size: 13px;
-      border-bottom: 1px solid #f5f5f5;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      color: #999;
     }
-    .dropdown-item:last-child { border-bottom: none; }
-    .dropdown-item:hover, .dropdown-item.sel { background: #f9f9f9; }
-    .dropdown-item .dn { font-weight: 500; }
-    .dropdown-item .dd { color: #aaa; font-size: 12px; margin-left: auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
 
+    .panel {
+      border-radius: 6px;
+      border-color: #e0e0e0;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .panel-body { padding: 24px 28px; }
+
+    /* 仓库下拉 */
+    .repo-wrapper { position: relative; }
+    .repo-dropdown {
+      position: absolute;
+      top: 100%; left: 0; right: 0;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-top: none;
+      border-radius: 0 0 4px 4px;
+      max-height: 240px;
+      overflow-y: auto;
+      z-index: 1050;
+      display: none;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+    }
+    .repo-dropdown.open { display: block; }
+    .repo-dd-item {
+      padding: 10px 16px;
+      cursor: pointer;
+      border-bottom: 1px solid #f0f0f0;
+      transition: background 0.12s;
+    }
+    .repo-dd-item:last-child { border-bottom: none; }
+    .repo-dd-item:hover, .repo-dd-item.active { background: #f5f5f5; }
+    .repo-dd-item .repo-fullname { font-weight: 600; color: #333; }
+    .repo-dd-item .repo-private { color: #a0a0a0; font-size: 11px; margin-left: 4px; }
+    .repo-dd-item .repo-desc {
+      color: #aaa; font-size: 12px;
+      display: block; margin-top: 2px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    /* 拖拽区 */
     .dropzone {
-      border: 1.5px dashed #e5e5e5;
+      border: 2px dashed #ddd;
       border-radius: 8px;
-      padding: 36px 16px;
+      padding: 34px 20px;
       text-align: center;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.25s ease;
       background: #fafafa;
     }
-    .dropzone:hover, .dropzone.over { border-color: #1a1a1a; background: #f5f5f5; }
-    .dropzone.done { border-color: #1a1a1a; border-style: solid; background: #fafafa; }
-    .dropzone svg { width: 32px; height: 32px; stroke: #bbb; margin-bottom: 10px; }
-    .dropzone .dz-text { font-size: 13px; color: #999; }
-    .dropzone .dz-text b { color: #555; font-weight: 500; }
-    .dropzone .dz-hint { font-size: 11px; color: #ccc; margin-top: 4px; }
+    .dropzone:hover { border-color: #b0b0b0; background: #f2f2f2; }
+    .dropzone.drag-over { border-color: #337ab7; background: #edf4fa; }
+    .dropzone.has-file { border-color: #5cb85c; border-style: solid; background: #f6fdf6; }
+    .dropzone .dz-icon { font-size: 38px; color: #c0c0c0; margin-bottom: 8px; transition: color 0.25s; }
+    .dropzone:hover .dz-icon, .dropzone.drag-over .dz-icon { color: #337ab7; }
+    .dropzone.has-file .dz-icon { color: #5cb85c; }
+    .dropzone .dz-main { font-size: 14px; color: #888; }
+    .dropzone .dz-main strong { color: #337ab7; font-weight: 600; }
+    .dropzone .dz-hint { font-size: 12px; color: #c0c0c0; margin-top: 4px; }
 
-    .file-card {
+    /* 文件信息卡片 */
+    .file-info-card {
       display: none;
-      align-items: center;
-      gap: 10px;
-      margin-top: 10px;
-      padding: 10px 14px;
-      background: #fafafa;
+      margin-top: 12px;
+      padding: 12px 16px;
+      background: #f9f9f9;
       border: 1px solid #e5e5e5;
-      border-radius: 6px;
+      border-radius: 4px;
+      align-items: center;
     }
-    .file-card.on { display: flex; }
-    .file-card .fc-name { flex: 1; font-size: 13px; word-break: break-all; }
-    .file-card .fc-size { font-size: 12px; color: #aaa; white-space: nowrap; }
-    .file-card .fc-del {
+    .file-info-card.show { display: flex; }
+    .file-info-card .fic-icon {
+      width: 38px; height: 38px;
+      line-height: 38px; text-align: center;
+      background: #eee; border-radius: 4px;
+      font-size: 17px; flex-shrink: 0; margin-right: 12px;
+    }
+    .file-info-card .fic-detail { flex: 1; min-width: 0; }
+    .file-info-card .fic-name {
+      font-size: 13px; font-weight: 600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .file-info-card .fic-size { font-size: 11px; color: #aaa; margin-top: 2px; }
+    .file-info-card .fic-remove {
+      color: #bbb; cursor: pointer; flex-shrink: 0;
+      font-size: 18px; padding: 4px 6px;
       background: none; border: none;
-      color: #ccc; cursor: pointer;
-      font-size: 16px; padding: 2px 4px;
       transition: color 0.15s;
     }
-    .file-card .fc-del:hover { color: #e00; }
+    .file-info-card .fic-remove:hover { color: #d9534f; }
 
-    .btn {
+    /* 提交按钮 */
+    .btn-upload {
       width: 100%;
-      height: 46px;
-      background: #1a1a1a;
-      border: none;
-      border-radius: 6px;
-      color: #fff;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background 0.15s;
-      margin-top: 32px;
-      font-family: inherit;
+      padding: 11px 20px;
+      font-size: 15px;
+      font-weight: 600;
       letter-spacing: 1px;
+      border-radius: 4px;
+      margin-top: 6px;
+      transition: all 0.2s;
     }
-    .btn:hover { background: #333; }
-    .btn:disabled { background: #e5e5e5; color: #bbb; cursor: not-allowed; }
-    .btn.busy { pointer-events: none; background: #555; }
+    .btn-upload .fa-spinner { display: none; margin-left: 6px; }
 
-    .spinner {
-      display: inline-block;
-      width: 14px; height: 14px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin 0.6s linear infinite;
-      vertical-align: middle;
-      margin-left: 6px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    /* 提示信息 */
+    .alert-msg { display: none; margin-top: 16px; margin-bottom: 0; }
 
-    .msg {
-      margin-top: 16px;
-      padding: 12px 16px;
-      border-radius: 6px;
-      font-size: 13px;
-      display: none;
-      line-height: 1.5;
-    }
-    .msg.on { display: block; }
-    .msg.ok { background: #f0faf0; color: #2a7a2a; border: 1px solid #d4eed4; }
-    .msg.err { background: #fef5f5; color: #c33; border: 1px solid #fdd; }
-    .msg a { color: inherit; }
+    /* label 优化 */
+    .control-label { font-weight: 500 !important; color: #555 !important; }
+    .control-label .text-light { font-weight: 400; color: #bbb; font-size: 12px; }
 
-    .note {
-      font-size: 11px;
-      color: #ccc;
-      margin-top: 4px;
-    }
+    /* form-group 间距 */
+    .form-group-sm { margin-bottom: 16px; }
+
+    hr.soft { border-top-color: #f0f0f0; margin: 12px 0 18px; }
 
     @media (max-width: 480px) {
-      .container { padding: 24px 16px; }
-      .header { margin-bottom: 28px; }
-      .dd { display: none; }
+      .panel-body { padding: 18px 16px; }
+      .repo-dd-item .repo-desc { display: none; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <svg viewBox="0 0 16 16" fill="#1a1a1a"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-      <h1>GitHub Upload</h1>
-    </div>
 
-    <!-- 仓库 -->
-    <div class="field">
-      <label class="field-label">仓库</label>
-      <div class="input-wrap" id="wrapRepo">
-        <input class="input" id="inpRepo" placeholder="owner/repo" autocomplete="off">
-        <button class="input-clear" id="btnClear">&times;</button>
-        <div class="dropdown" id="ddRepo"></div>
-      </div>
-    </div>
-
-    <div class="field">
-      <label class="field-label">路径<span class="note"> 如 folder/file.txt</span></label>
-      <input class="input" id="inpPath" placeholder="path/to/file.txt">
-    </div>
-
-    <!-- 文件 -->
-    <div class="field">
-      <label class="field-label">文件</label>
-      <div class="dropzone" id="zone">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        <div class="dz-text">拖拽文件，或 <b>点击选择</b></div>
-        <div class="dz-hint">已存在文件将直接覆盖</div>
-      </div>
-      <div class="file-card" id="card">
-        <span>📄</span>
-        <span class="fc-name" id="fname"></span>
-        <span class="fc-size" id="fsize"></span>
-        <button class="fc-del" id="btnDel">&times;</button>
-      </div>
-      <input type="file" id="inpFile" style="display:none">
-    </div>
-
-    <!-- 提交信息 -->
-    <div class="field">
-      <label class="field-label">提交信息</label>
-      <input class="input" id="inpMsg" value="Upload via API" placeholder="commit message">
-    </div>
-
-    <button class="btn" id="btnUp" disabled>上传</button>
-    <div class="msg" id="msg"></div>
+<div class="upload-wrap">
+  <div class="page-header">
+    <h2><i class="fa fa-github"></i> GitHub Upload</h2>
+    <small>通过 API 上传文件到仓库 · 已存在文件自动覆盖</small>
   </div>
 
-  <script>
-    (() => {
-      const el = (id) => document.getElementById(id);
-      const inpRepo = el('inpRepo'), ddRepo = el('ddRepo'), btnClear = el('btnClear'), wrapRepo = el('wrapRepo');
-      const inpPath = el('inpPath'), inpMsg = el('inpMsg');
-      const zone = el('zone'), card = el('card'), fname = el('fname'), fsize = el('fsize'), btnDel = el('btnDel'), inpFile = el('inpFile');
-      const btnUp = el('btnUp'), msg = el('msg');
+  <div class="panel panel-default">
+    <div class="panel-body">
+      <!-- 仓库 -->
+      <div class="form-group">
+        <label class="control-label">仓库</label>
+        <div class="repo-wrapper" id="wrapRepo">
+          <div class="input-group">
+            <span class="input-group-addon"><i class="fa fa-book"></i></span>
+            <input type="text" class="form-control" id="inpRepo"
+                   placeholder="owner/repo" autocomplete="off">
+            <span class="input-group-btn">
+              <button class="btn btn-default" id="btnClear"
+                      style="display:none" title="清除">
+                <i class="fa fa-times"></i>
+              </button>
+            </span>
+          </div>
+          <div class="repo-dropdown" id="ddRepo"></div>
+        </div>
+      </div>
 
-      let file = null, selRepo = null, timer = null, di = -1;
+      <hr class="soft">
 
-      const fmt = b => b < 1024 ? b + ' B' : b < 1048576 ? (b / 1024).toFixed(1) + ' KB' : (b / 1048576).toFixed(1) + ' MB';
+      <!-- 文件上传 -->
+      <div class="form-group">
+        <label class="control-label">文件</label>
+        <div class="dropzone" id="zone">
+          <div class="dz-icon"><i class="fa fa-cloud-upload"></i></div>
+          <div class="dz-main">拖拽文件到此处，或 <strong>点击选择</strong></div>
+          <div class="dz-hint">支持任意文件类型</div>
+        </div>
+        <div class="file-info-card" id="card">
+          <div class="fic-icon"><i class="fa fa-file-text"></i></div>
+          <div class="fic-detail">
+            <div class="fic-name" id="fname"></div>
+            <div class="fic-size" id="fsize"></div>
+          </div>
+          <button class="fic-remove" id="btnDel" title="移除">
+            <i class="fa fa-times-circle"></i>
+          </button>
+        </div>
+        <input type="file" id="inpFile" hidden>
+      </div>
 
-      function showMsg(t, cls) { msg.textContent = t; msg.className = 'msg on ' + cls; }
-      function hideMsg() { msg.className = 'msg'; msg.textContent = ''; }
+      <hr class="soft">
 
-      function check() {
-        btnUp.disabled = !(inpRepo.value.trim() && file && inpPath.value.trim());
+      <!-- 路径 -->
+      <div class="form-group">
+        <label class="control-label">
+          目标路径
+          <span class="text-light"> 例如 docs/readme.md</span>
+        </label>
+        <div class="input-group">
+          <span class="input-group-addon"><i class="fa fa-folder-open"></i></span>
+          <input type="text" class="form-control" id="inpPath"
+                 placeholder="path/to/file.txt">
+        </div>
+      </div>
+
+      <!-- 提交信息 -->
+      <div class="form-group">
+        <label class="control-label">提交信息</label>
+        <div class="input-group">
+          <span class="input-group-addon"><i class="fa fa-comment"></i></span>
+          <input type="text" class="form-control" id="inpMsg"
+                 value="Upload via API" placeholder="commit message">
+        </div>
+      </div>
+
+      <!-- 上传按钮 -->
+      <button class="btn btn-primary btn-upload" id="btnUp" disabled>
+        <span id="btnLabel">上传到 GitHub</span>
+        <i class="fa fa-spinner fa-spin" id="btnSpinner"></i>
+      </button>
+
+      <div class="alert alert-msg" id="msg"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src="https://apps.bdimg.com/libs/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+<script>
+  $(function () {
+    var $repo = $('#inpRepo'),
+        $dd   = $('#ddRepo'),
+        $clear= $('#btnClear'),
+        $wrap = $('#wrapRepo'),
+        $path = $('#inpPath'),
+        $msg  = $('#inpMsg'),
+        $zone = $('#zone'),
+        $card = $('#card'),
+        $fname= $('#fname'),
+        $fsize= $('#fsize'),
+        $del  = $('#btnDel'),
+        $file = $('#inpFile'),
+        $btn  = $('#btnUp'),
+        $label= $('#btnLabel'),
+        $spin = $('#btnSpinner'),
+        $alert= $('#msg');
+
+    var _file = null, _repo = null, _timer = null, _di = -1;
+
+    function fmtBytes(b) {
+      if (b < 1024) return b + ' B';
+      if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+      return (b / 1048576).toFixed(1) + ' MB';
+    }
+
+    function showAlert(msg, type) {
+      $alert.removeClass('alert-success alert-danger alert-info')
+            .addClass('alert-' + type).text(msg).show();
+    }
+    function hideAlert() { $alert.hide().text(''); }
+
+    function checkBtn() {
+      $btn.prop('disabled', !($repo.val().trim() && _file && $path.val().trim()));
+    }
+
+    // 搜索仓库
+    function searchRepos(q) {
+      return $.getJSON('/api/repos?q=' + encodeURIComponent(q))
+        .then(function (d) { return d.repos || []; })
+        .fail(function () { return []; });
+    }
+
+    function escapeHtml(s) {
+      return $('<div>').text(s).html();
+    }
+
+    function renderDropdown(repos) {
+      $dd.empty(); _di = -1;
+      if (!repos.length) {
+        $dd.append('<div class="repo-dd-item" style="color:#aaa;cursor:default">未找到仓库</div>').addClass('open');
+        return;
       }
-
-      function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-
-      async function search(q) {
-        try {
-          const r = await fetch('/api/repos?q=' + encodeURIComponent(q));
-          if (!r.ok) throw 0;
-          return (await r.json()).repos || [];
-        } catch (_) { return []; }
-      }
-
-      function render(repos) {
-        ddRepo.innerHTML = ''; di = -1;
-        if (!repos.length) { ddRepo.innerHTML = '<div class="dropdown-item" style="color:#aaa;cursor:default">无结果</div>'; ddRepo.classList.add('on'); return; }
-        repos.forEach((r, i) => {
-          const d = document.createElement('div');
-          d.className = 'dropdown-item';
-          d.innerHTML = `<span class="dn">${esc(r.full_name)}</span>${r.private ? ' 🔒' : ''}<span class="dd">${esc(r.description || '')}</span>`;
-          d.addEventListener('mousedown', e => { e.preventDefault(); pick(r); });
-          d.dataset.idx = i;
-          ddRepo.appendChild(d);
+      repos.forEach(function (r, i) {
+        var $item = $('<div class="repo-dd-item"></div>');
+        var badge = r.private ? ' <span class="repo-private"><i class="fa fa-lock"></i></span>' : '';
+        var desc  = r.description ? '<span class="repo-desc">' + escapeHtml(r.description) + '</span>' : '';
+        $item.html('<span class="repo-fullname">' + escapeHtml(r.full_name) + '</span>' + badge + desc);
+        $item.data('repo', r).data('idx', i);
+        $item.on('mousedown', function (e) {
+          e.preventDefault();
+          pickRepo($(this).data('repo'));
         });
-        ddRepo.classList.add('on');
+        $dd.append($item);
+      });
+      $dd.addClass('open');
+    }
+
+    function pickRepo(r) {
+      _repo = r;
+      $repo.val(r.full_name);
+      $dd.removeClass('open');
+      $clear.show();
+      checkBtn();
+    }
+
+    // 仓库输入
+    $repo.on('input', function () {
+      var v = $.trim(this.value);
+      $clear.toggle(v.length > 0);
+      _repo = null;
+      if (v.indexOf('/') > -1 && v.length > 2) {
+        clearTimeout(_timer);
+        _timer = setTimeout(function () {
+          searchRepos(v).then(renderDropdown);
+        }, 350);
+      } else if (!v) {
+        clearTimeout(_timer);
+        _timer = setTimeout(function () {
+          searchRepos('').then(function (r) { if (r.length) renderDropdown(r); });
+        }, 300);
+      } else {
+        $dd.removeClass('open');
       }
+      checkBtn();
+    });
 
-      function pick(r) {
-        selRepo = r;
-        inpRepo.value = r.full_name;
-        ddRepo.classList.remove('on');
-        btnClear.classList.add('on');
-        check();
+    $repo.on('focus', function () {
+      if (!$.trim(this.value)) {
+        searchRepos('').then(function (r) { if (r.length) renderDropdown(r); });
       }
+    });
 
-      inpRepo.addEventListener('input', function () {
-        const v = this.value.trim();
-        btnClear.classList.toggle('on', v.length > 0);
-        selRepo = null;
-        if (v.includes('/') && v.length > 2) {
-          clearTimeout(timer);
-          timer = setTimeout(async () => render(await search(v)), 350);
-        } else if (!v) {
-          clearTimeout(timer);
-          timer = setTimeout(async () => { const r = await search(''); if (r.length) render(r); }, 300);
-        } else { ddRepo.classList.remove('on'); }
-        check();
-      });
-
-      inpRepo.addEventListener('focus', () => {
-        if (!inpRepo.value.trim()) search('').then(r => { if (r.length) render(r); });
-      });
-
-      inpRepo.addEventListener('keydown', function (e) {
-        const items = ddRepo.querySelectorAll('.dropdown-item:not([style*="cursor:default"])');
-        if (!ddRepo.classList.contains('on') || !items.length) return;
-        if (e.key === 'ArrowDown') { e.preventDefault(); di = Math.min(di + 1, items.length - 1); items.forEach((it, i) => { it.classList.toggle('sel', i === di); if (i === di) it.scrollIntoView({ block: 'nearest' }); }); }
-        else if (e.key === 'ArrowUp') { e.preventDefault(); di = Math.max(di - 1, 0); items.forEach((it, i) => { it.classList.toggle('sel', i === di); if (i === di) it.scrollIntoView({ block: 'nearest' }); }); }
-        else if (e.key === 'Enter' && di >= 0) { e.preventDefault(); items[di].click(); }
-        else if (e.key === 'Escape') { ddRepo.classList.remove('on'); }
-      });
-
-      document.addEventListener('click', e => { if (!wrapRepo.contains(e.target)) ddRepo.classList.remove('on'); });
-
-      btnClear.addEventListener('click', () => {
-        inpRepo.value = ''; selRepo = null; ddRepo.classList.remove('on');
-        btnClear.classList.remove('on'); check(); inpRepo.focus();
-      });
-
-      // 文件
-      zone.addEventListener('click', () => inpFile.click());
-      inpFile.addEventListener('change', () => { if (inpFile.files.length) setFile(inpFile.files[0]); });
-
-      zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('over'); });
-      zone.addEventListener('dragleave', e => { e.preventDefault(); zone.classList.remove('over'); });
-      zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('over'); if (e.dataTransfer.files.length) setFile(e.dataTransfer.files[0]); });
-
-      function setFile(f) {
-        file = f; fname.textContent = f.name; fsize.textContent = fmt(f.size);
-        card.classList.add('on'); zone.classList.add('done');
-        if (!inpPath.value.trim()) inpPath.value = f.name;
-        check();
+    // 键盘导航
+    $repo.on('keydown', function (e) {
+      var items = $dd.find('.repo-dd-item:not([style*="cursor:default"])');
+      if (!$dd.hasClass('open') || !items.length) return;
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        _di = Math.min(_di + 1, items.length - 1);
+        items.removeClass('active').eq(_di).addClass('active').get(0).scrollIntoView({ block: 'nearest' });
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        _di = Math.max(_di - 1, 0);
+        items.removeClass('active').eq(_di).addClass('active').get(0).scrollIntoView({ block: 'nearest' });
+      } else if (e.key === 'Enter' && _di >= 0) {
+        e.preventDefault();
+        items.eq(_di).trigger('mousedown');
+      } else if (e.key === 'Escape') {
+        $dd.removeClass('open');
       }
+    });
 
-      btnDel.addEventListener('click', e => {
-        e.stopPropagation(); file = null; inpFile.value = '';
-        card.classList.remove('on'); zone.classList.remove('done'); check();
-      });
+    $(document).on('click', function (e) {
+      if (!$.contains($wrap[0], e.target)) $dd.removeClass('open');
+    });
 
-      inpPath.addEventListener('input', check);
+    $clear.on('click', function () {
+      $repo.val('').focus(); _repo = null;
+      $dd.removeClass('open'); $(this).hide();
+      checkBtn();
+    });
 
-      // 上传
-      btnUp.addEventListener('click', async function () {
-        if (this.disabled || !file) return;
-        hideMsg(); this.disabled = true; this.classList.add('busy');
-        this.innerHTML = '上传中<span class="spinner"></span>';
+    // 文件上传区域
+    $zone.on('click', function () { $file.click(); });
 
-        try {
-          const b64 = await new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(r.result.split(',')[1]); r.onerror = no; r.readAsDataURL(file); });
-          const res = await fetch('/api/upload', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              repo: inpRepo.value.trim(),
-              branch: 'main',
-              path: inpPath.value.trim(),
-              content: b64,
-              message: inpMsg.value.trim() || 'Upload via API'
-            })
-          });
-          const d = await res.json();
-          if (res.ok) {
-            const a = d.overwritten ? '已覆盖' : '已创建';
-            showMsg(`文件${a}：${d.path}${d.url ? ` — <a href="${d.url}" target="_blank">查看 &nearr;</a>` : ''}`, 'ok');
-          } else {
-            showMsg('上传失败：' + (d.error || '未知错误'), 'err');
+    $file.on('change', function () {
+      if (this.files.length) setFile(this.files[0]);
+    });
+
+    $zone.on('dragover', function (e) {
+      e.preventDefault();
+      $(this).addClass('drag-over');
+    }).on('dragleave', function (e) {
+      e.preventDefault();
+      $(this).removeClass('drag-over');
+    }).on('drop', function (e) {
+      e.preventDefault();
+      $(this).removeClass('drag-over');
+      var files = e.originalEvent.dataTransfer.files;
+      if (files.length) setFile(files[0]);
+    });
+
+    function setFile(f) {
+      _file = f;
+      $fname.text(f.name);
+      $fsize.text(fmtBytes(f.size));
+      $card.addClass('show');
+      $zone.addClass('has-file');
+      if (!$.trim($path.val())) $path.val(f.name);
+      checkBtn();
+    }
+
+    $del.on('click', function (e) {
+      e.stopPropagation();
+      _file = null;
+      $file.val('');
+      $card.removeClass('show');
+      $zone.removeClass('has-file');
+      checkBtn();
+    });
+
+    $path.on('input', checkBtn);
+
+    // 上传
+    $btn.on('click', function () {
+      if ($btn.prop('disabled') || !_file) return;
+
+      hideAlert();
+      $btn.prop('disabled', true);
+      $label.text('上传中');
+      $spin.show();
+
+      var reader = new FileReader();
+      reader.onload = function () {
+        var b64 = reader.result.split(',')[1];
+        $.ajax({
+          url: '/api/upload',
+          method: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({
+            repo: $.trim($repo.val()),
+            branch: 'main',
+            path: $.trim($path.val()),
+            content: b64,
+            message: $.trim($msg.val()) || 'Upload via API'
+          }),
+          success: function (d) {
+            var action = d.overwritten ? '已覆盖' : '已创建';
+            var link = d.url ? ' — <a href="' + d.url + '" target="_blank">查看 <i class="fa fa-external-link"></i></a>' : '';
+            showAlert('文件' + action + '：' + d.path + link, 'success');
+          },
+          error: function (xhr) {
+            var err = '未知错误';
+            try { err = JSON.parse(xhr.responseText).error || err; } catch (_) {}
+            showAlert('上传失败：' + err, 'danger');
+          },
+          complete: function () {
+            $btn.prop('disabled', false);
+            $label.text('上传到 GitHub');
+            $spin.hide();
+            checkBtn();
           }
-        } catch (e) {
-          showMsg('网络错误：' + e.message, 'err');
-        } finally {
-          this.disabled = false; this.classList.remove('busy');
-          this.textContent = '上传'; check();
-        }
-      });
-    })();
-  </script>
+        });
+      };
+      reader.onerror = function () {
+        showAlert('文件读取失败', 'danger');
+        $btn.prop('disabled', false);
+        $label.text('上传到 GitHub');
+        $spin.hide();
+        checkBtn();
+      };
+      reader.readAsDataURL(_file);
+    });
+  });
+</script>
+
 </body>
 </html>
