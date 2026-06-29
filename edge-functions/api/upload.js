@@ -101,9 +101,41 @@ export default async function onRequest(context) {
     }
     const base64Content = btoa(binaryStr);
 
-    // ── 调用 GitHub API 创建/更新文件 ──
+    // ── 构建 GitHub API URL ──
     const githubApiUrl = `https://api.github.com/repos/${encodeURIComponent(username)}/${encodeURIComponent(repo)}/contents/${encodeURIComponent(fileName)}`;
 
+    // ── 探测目标文件是否存在，获取 sha（用于覆盖更新） ──
+    let existingSha = null;
+    try {
+      const checkResponse = await fetch(githubApiUrl + '?ref=' + encodeURIComponent(branch), {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/vnd.github.v3+json',
+          'User-Agent': 'EdgeOne-Pages-App',
+        },
+      });
+      if (checkResponse.ok) {
+        const existingFile = await checkResponse.json();
+        if (existingFile && existingFile.sha) {
+          existingSha = existingFile.sha;
+        }
+      }
+      // 404 表示文件不存在，正常继续；其他错误也忽略，让后续 PUT 请求去处理
+    } catch (_) {
+      // 探测失败不阻塞流程，交给后续 PUT 处理
+    }
+
+    // ── 构造请求体（存在 sha 时附带，用于更新已有文件） ──
+    const putBody = {
+      message: commitMessage,
+      content: base64Content,
+      branch: branch,
+    };
+    if (existingSha) {
+      putBody.sha = existingSha;
+    }
+
+    // ── 调用 GitHub API 创建/更新文件 ──
     const ghResponse = await fetch(githubApiUrl, {
       method: 'PUT',
       headers: {
@@ -112,35 +144,13 @@ export default async function onRequest(context) {
         'User-Agent': 'EdgeOne-Pages-App',
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        message: commitMessage,
-        content: base64Content,
-        branch: branch,
-      }),
+      body: JSON.stringify(putBody),
     });
 
     const ghBody = await ghResponse.json();
 
     if (!ghResponse.ok) {
-      // 409: 文件已存在，需要提供 sha 才能更新
-      if (ghResponse.status === 409) {
-        return new Response(
-          JSON.stringify({
-            error: '文件已存在',
-            message: ghBody.message || 'A file with this path already exists in the repository.',
-            detail: '如需覆盖已有文件，请先通过 GitHub 手动删除后再上传，或使用不同的文件路径。',
-          }),
-          {
-            status: 409,
-            headers: {
-              'Content-Type': 'application/json',
-              'Access-Control-Allow-Origin': '*',
-            },
-          }
-        );
-      }
-
-      // 422: 通常为参数校验失败（如分支不存在）
+      // 422: 参数校验失败（分支不存在、路径非法等）
       if (ghResponse.status === 422) {
         return new Response(
           JSON.stringify({
@@ -177,6 +187,7 @@ export default async function onRequest(context) {
     return new Response(
       JSON.stringify({
         success: true,
+        overwritten: !!existingSha,
         content: {
           name: ghBody.content.name,
           path: ghBody.content.path,
