@@ -1,0 +1,11 @@
+{
+  "name": "github-file-uploader",
+  "version": "1.0.0",
+  "description": "基于 EdgeOne Pages 的 GitHub 文件上传页面",
+  "private": true,
+  "scripts": {
+    "dev": "echo '请使用 EdgeOne Makers CLI 进行本地开发: npx edgeone pages dev'"
+  },
+  "keywords": ["edgeone", "pages", "github", "upload"],
+  "license": "MIT"
+}
