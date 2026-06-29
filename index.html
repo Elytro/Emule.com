@@ -832,18 +832,14 @@
             uploadBtn.disabled = false;
 
             if (result.status >= 200 && result.status < 300 && result.data.content) {
-              showToast('文件上传成功！', 'success');
+              var action = result.data.overwritten ? '文件覆盖成功！' : '文件上传成功！';
+              var icon = result.data.overwritten ? '🔄' : '✅';
+              showToast(action, 'success');
               resultBox.innerHTML =
-                '✅ 上传成功！<br>' +
+                icon + ' ' + action + '<br>' +
                 '文件路径：<strong>' + escapeHtml(result.data.content.path) + '</strong><br>' +
                 '查看链接：<a href="' + result.data.content.html_url + '" target="_blank" rel="noopener">' +
                 result.data.content.html_url + '</a>';
-              resultBox.classList.add('show');
-            } else if (result.status === 409) {
-              showToast('文件已存在，请使用不同的路径或先删除已有文件', 'error');
-              resultBox.innerHTML =
-                '❌ 文件已存在：<strong>' + escapeHtml(filePathInput.value.trim() || selectedFile.name) +
-                '</strong>，请修改文件路径后重试。';
               resultBox.classList.add('show');
             } else if (result.status === 422) {
               var msg = (result.data && result.data.message) || '请求无效';
