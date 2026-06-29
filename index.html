@@ -3,618 +3,382 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GitHub File Uploader</title>
+  <title>GitHub Upload</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      background: #0d1117;
-      color: #c9d1d9;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+      background: #fff;
+      color: #1a1a1a;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
+      -webkit-font-smoothing: antialiased;
     }
-    .container {
-      width: 100%;
-      max-width: 640px;
-      padding: 24px;
-    }
-    .card {
-      background: #161b22;
-      border: 1px solid #30363d;
-      border-radius: 12px;
-      padding: 36px;
-    }
-    .logo {
+
+    .container { width: 100%; max-width: 520px; padding: 40px 24px; }
+
+    .header {
       display: flex;
       align-items: center;
       gap: 10px;
-      margin-bottom: 28px;
+      margin-bottom: 40px;
     }
-    .logo svg { width: 32px; height: 32px; fill: #f0f6fc; }
-    .logo h1 { font-size: 22px; font-weight: 600; color: #f0f6fc; }
-    .form-group { margin-bottom: 20px; }
-    .label {
+    .header h1 { font-size: 20px; font-weight: 500; letter-spacing: -0.3px; }
+    .header svg { width: 20px; height: 20px; }
+
+    .field { margin-bottom: 24px; }
+    .field-label {
       display: block;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 500;
-      color: #8b949e;
-      margin-bottom: 6px;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
     }
-    .input-wrapper { position: relative; }
-    .input-wrapper input {
+
+    .input {
       width: 100%;
-      padding: 10px 14px;
-      padding-right: 36px;
-      background: #0d1117;
-      border: 1px solid #30363d;
-      border-radius: 8px;
-      color: #c9d1d9;
+      height: 44px;
+      padding: 0 14px;
+      border: 1px solid #e5e5e5;
+      border-radius: 6px;
       font-size: 14px;
+      color: #1a1a1a;
+      background: #fff;
       outline: none;
-      transition: border-color 0.2s;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      font-family: inherit;
     }
-    .input-wrapper input:focus { border-color: #58a6ff; }
-    .input-wrapper input::placeholder { color: #484f58; }
-    .clear-btn {
+    .input:focus { border-color: #1a1a1a; box-shadow: 0 0 0 3px rgba(0,0,0,0.04); }
+    .input::placeholder { color: #ccc; }
+
+    .input-wrap { position: relative; }
+    .input-wrap .input { padding-right: 36px; }
+    .input-clear {
       position: absolute;
-      right: 8px; top: 50%;
+      right: 10px; top: 50%;
       transform: translateY(-50%);
       background: none; border: none;
-      color: #8b949e; cursor: pointer;
-      font-size: 18px; line-height: 1;
+      color: #bbb; cursor: pointer;
+      font-size: 16px; line-height: 1;
       padding: 4px;
       display: none;
     }
-    .clear-btn.visible { display: block; }
+    .input-clear.on { display: block; }
+
     .dropdown {
       position: absolute;
-      top: 100%;
+      top: calc(100% + 4px);
       left: 0; right: 0;
-      background: #161b22;
-      border: 1px solid #30363d;
-      border-radius: 8px;
-      margin-top: 4px;
-      max-height: 240px;
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 6px;
+      max-height: 220px;
       overflow-y: auto;
       z-index: 10;
       display: none;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
     }
-    .dropdown.show { display: block; }
+    .dropdown.on { display: block; }
     .dropdown-item {
       padding: 10px 14px;
       cursor: pointer;
-      font-size: 14px;
-      border-bottom: 1px solid #21262d;
-      transition: background 0.15s;
+      font-size: 13px;
+      border-bottom: 1px solid #f5f5f5;
       display: flex;
       align-items: center;
       gap: 8px;
     }
     .dropdown-item:last-child { border-bottom: none; }
-    .dropdown-item:hover, .dropdown-item.active { background: #1f6feb22; }
-    .dropdown-item .repo-name { color: #58a6ff; font-weight: 500; }
-    .dropdown-item .repo-desc { color: #8b949e; font-size: 12px; margin-left: auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
-    .dropdown-item .repo-private { color: #8b949e; font-size: 11px; }
-    .loading-spinner {
-      display: inline-block;
-      width: 14px; height: 14px;
-      border: 2px solid #30363d;
-      border-top-color: #58a6ff;
-      border-radius: 50%;
-      animation: spin 0.6s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .dropdown-item:hover, .dropdown-item.sel { background: #f9f9f9; }
+    .dropdown-item .dn { font-weight: 500; }
+    .dropdown-item .dd { color: #aaa; font-size: 12px; margin-left: auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
 
-    .upload-zone {
-      border: 2px dashed #30363d;
-      border-radius: 12px;
-      padding: 40px 20px;
+    .dropzone {
+      border: 1.5px dashed #e5e5e5;
+      border-radius: 8px;
+      padding: 36px 16px;
       text-align: center;
       cursor: pointer;
       transition: all 0.2s;
-      background: #0d1117;
-      position: relative;
+      background: #fafafa;
     }
-    .upload-zone:hover, .upload-zone.dragover {
-      border-color: #58a6ff;
-      background: #1f6feb0a;
-    }
-    .upload-zone.has-file {
-      border-color: #3fb950;
-      border-style: solid;
-      background: #2ea0430a;
-    }
-    .upload-icon { margin-bottom: 12px; }
-    .upload-icon svg { width: 40px; height: 40px; stroke: #8b949e; }
-    .upload-text { font-size: 14px; color: #8b949e; }
-    .upload-text strong { color: #58a6ff; }
-    .upload-hint { font-size: 12px; color: #484f58; margin-top: 6px; }
+    .dropzone:hover, .dropzone.over { border-color: #1a1a1a; background: #f5f5f5; }
+    .dropzone.done { border-color: #1a1a1a; border-style: solid; background: #fafafa; }
+    .dropzone svg { width: 32px; height: 32px; stroke: #bbb; margin-bottom: 10px; }
+    .dropzone .dz-text { font-size: 13px; color: #999; }
+    .dropzone .dz-text b { color: #555; font-weight: 500; }
+    .dropzone .dz-hint { font-size: 11px; color: #ccc; margin-top: 4px; }
 
-    .file-info {
+    .file-card {
       display: none;
       align-items: center;
       gap: 10px;
-      margin-top: 12px;
+      margin-top: 10px;
       padding: 10px 14px;
-      background: #0d1117;
-      border: 1px solid #30363d;
-      border-radius: 8px;
+      background: #fafafa;
+      border: 1px solid #e5e5e5;
+      border-radius: 6px;
     }
-    .file-info.show { display: flex; }
-    .file-info .file-icon { font-size: 20px; }
-    .file-info .file-name { flex: 1; font-size: 13px; color: #f0f6fc; word-break: break-all; }
-    .file-info .file-size { font-size: 12px; color: #8b949e; white-space: nowrap; }
-    .file-info .remove-file {
+    .file-card.on { display: flex; }
+    .file-card .fc-name { flex: 1; font-size: 13px; word-break: break-all; }
+    .file-card .fc-size { font-size: 12px; color: #aaa; white-space: nowrap; }
+    .file-card .fc-del {
       background: none; border: none;
-      color: #f85149; cursor: pointer;
-      font-size: 18px; padding: 2px 6px;
+      color: #ccc; cursor: pointer;
+      font-size: 16px; padding: 2px 4px;
+      transition: color 0.15s;
     }
-
-    .branch-wrapper {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .branch-wrapper span {
-      font-size: 14px;
-      color: #8b949e;
-      white-space: nowrap;
-    }
-    .branch-wrapper input {
-      flex: 1;
-      padding: 10px 14px;
-      background: #0d1117;
-      border: 1px solid #30363d;
-      border-radius: 8px;
-      color: #c9d1d9;
-      font-size: 14px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .branch-wrapper input:focus { border-color: #58a6ff; }
+    .file-card .fc-del:hover { color: #e00; }
 
     .btn {
       width: 100%;
-      padding: 12px 20px;
-      background: #238636;
-      border: 1px solid #2ea043;
-      border-radius: 8px;
+      height: 46px;
+      background: #1a1a1a;
+      border: none;
+      border-radius: 6px;
       color: #fff;
-      font-size: 15px;
-      font-weight: 600;
+      font-size: 14px;
+      font-weight: 500;
       cursor: pointer;
-      transition: background 0.2s;
-      margin-top: 24px;
+      transition: background 0.15s;
+      margin-top: 32px;
+      font-family: inherit;
+      letter-spacing: 1px;
     }
-    .btn:hover { background: #2ea043; }
-    .btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    .btn.loading {
-      pointer-events: none;
-      opacity: 0.7;
-    }
+    .btn:hover { background: #333; }
+    .btn:disabled { background: #e5e5e5; color: #bbb; cursor: not-allowed; }
+    .btn.busy { pointer-events: none; background: #555; }
 
-    .status {
+    .spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-left: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .msg {
       margin-top: 16px;
       padding: 12px 16px;
-      border-radius: 8px;
+      border-radius: 6px;
       font-size: 13px;
       display: none;
+      line-height: 1.5;
     }
-    .status.show { display: block; }
-    .status.success { background: #2ea0431a; border: 1px solid #2ea043; color: #3fb950; }
-    .status.error { background: #f851491a; border: 1px solid #f85149; color: #f85149; }
-    .status.info { background: #1f6feb1a; border: 1px solid #1f6feb; color: #58a6ff; }
+    .msg.on { display: block; }
+    .msg.ok { background: #f0faf0; color: #2a7a2a; border: 1px solid #d4eed4; }
+    .msg.err { background: #fef5f5; color: #c33; border: 1px solid #fdd; }
+    .msg a { color: inherit; }
 
-    .status a { color: #58a6ff; text-decoration: underline; }
-
-    .path-hint {
-      font-size: 12px;
-      color: #484f58;
+    .note {
+      font-size: 11px;
+      color: #ccc;
       margin-top: 4px;
-      margin-left: 4px;
     }
 
-    @media (max-width: 500px) {
-      .card { padding: 20px; }
-      .dropdown-item .repo-desc { display: none; }
+    @media (max-width: 480px) {
+      .container { padding: 24px 16px; }
+      .header { margin-bottom: 28px; }
+      .dd { display: none; }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="card">
-      <div class="logo">
-        <svg viewBox="0 0 16 16" version="1.1" width="32" height="32">
-          <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
-        </svg>
-        <h1>GitHub File Uploader</h1>
-      </div>
-
-      <!-- 仓库选择 -->
-      <div class="form-group">
-        <label class="label">选择仓库</label>
-        <div class="input-wrapper" id="repoInputWrapper">
-          <input
-            type="text"
-            id="repoInput"
-            placeholder="输入仓库名搜索，如 elytro/my-repo"
-            autocomplete="off"
-          />
-          <button class="clear-btn" id="clearRepoBtn" type="button">&times;</button>
-          <div class="dropdown" id="repoDropdown"></div>
-        </div>
-      </div>
-
-      <!-- 分支 -->
-      <div class="form-group">
-        <label class="label">目标分支</label>
-        <div class="branch-wrapper">
-          <input type="text" id="branchInput" placeholder="main" value="main" />
-        </div>
-      </div>
-
-      <!-- 文件路径 -->
-      <div class="form-group">
-        <label class="label">目标路径 <span class="path-hint">如 folder/file.txt 或 file.txt</span></label>
-        <input
-          type="text"
-          id="pathInput"
-          placeholder="path/to/file.txt"
-          style="width:100%;padding:10px 14px;background:#0d1117;border:1px solid #30363d;border-radius:8px;color:#c9d1d9;font-size:14px;outline:none;"
-        />
-      </div>
-
-      <!-- 文件上传区域 -->
-      <div class="form-group">
-        <label class="label">选择文件</label>
-        <div class="upload-zone" id="uploadZone">
-          <div class="upload-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-              <polyline points="17 8 12 3 7 8"/>
-              <line x1="12" y1="3" x2="12" y2="15"/>
-            </svg>
-          </div>
-          <div class="upload-text">拖拽文件到此处，或 <strong>点击浏览</strong></div>
-          <div class="upload-hint">文件已存在将自动覆盖</div>
-        </div>
-        <div class="file-info" id="fileInfo">
-          <span class="file-icon">📄</span>
-          <span class="file-name" id="fileName"></span>
-          <span class="file-size" id="fileSize"></span>
-          <button class="remove-file" id="removeFileBtn" type="button">&times;</button>
-        </div>
-        <input type="file" id="fileInput" style="display:none" />
-      </div>
-
-      <!-- 提交信息 -->
-      <div class="form-group">
-        <label class="label">提交信息</label>
-        <input
-          type="text"
-          id="commitMsg"
-          placeholder="Upload file via API"
-          value="Upload file via API"
-          style="width:100%;padding:10px 14px;background:#0d1117;border:1px solid #30363d;border-radius:8px;color:#c9d1d9;font-size:14px;outline:none;"
-        />
-      </div>
-
-      <button class="btn" id="uploadBtn" disabled>
-        <span id="btnText">上传文件</span>
-        <span class="loading-spinner" id="btnSpinner" style="display:none;"></span>
-      </button>
-
-      <div class="status" id="statusBox"></div>
+    <div class="header">
+      <svg viewBox="0 0 16 16" fill="#1a1a1a"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      <h1>GitHub Upload</h1>
     </div>
+
+    <!-- 仓库 -->
+    <div class="field">
+      <label class="field-label">仓库</label>
+      <div class="input-wrap" id="wrapRepo">
+        <input class="input" id="inpRepo" placeholder="owner/repo" autocomplete="off">
+        <button class="input-clear" id="btnClear">&times;</button>
+        <div class="dropdown" id="ddRepo"></div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">路径<span class="note"> 如 folder/file.txt</span></label>
+      <input class="input" id="inpPath" placeholder="path/to/file.txt">
+    </div>
+
+    <!-- 文件 -->
+    <div class="field">
+      <label class="field-label">文件</label>
+      <div class="dropzone" id="zone">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <div class="dz-text">拖拽文件，或 <b>点击选择</b></div>
+        <div class="dz-hint">已存在文件将直接覆盖</div>
+      </div>
+      <div class="file-card" id="card">
+        <span>📄</span>
+        <span class="fc-name" id="fname"></span>
+        <span class="fc-size" id="fsize"></span>
+        <button class="fc-del" id="btnDel">&times;</button>
+      </div>
+      <input type="file" id="inpFile" style="display:none">
+    </div>
+
+    <!-- 提交信息 -->
+    <div class="field">
+      <label class="field-label">提交信息</label>
+      <input class="input" id="inpMsg" value="Upload via API" placeholder="commit message">
+    </div>
+
+    <button class="btn" id="btnUp" disabled>上传</button>
+    <div class="msg" id="msg"></div>
   </div>
 
   <script>
-    (function () {
-      // DOM 元素
-      const repoInput = document.getElementById('repoInput');
-      const repoDropdown = document.getElementById('repoDropdown');
-      const clearRepoBtn = document.getElementById('clearRepoBtn');
-      const branchInput = document.getElementById('branchInput');
-      const pathInput = document.getElementById('pathInput');
-      const uploadZone = document.getElementById('uploadZone');
-      const fileInput = document.getElementById('fileInput');
-      const fileInfo = document.getElementById('fileInfo');
-      const fileName = document.getElementById('fileName');
-      const fileSize = document.getElementById('fileSize');
-      const removeFileBtn = document.getElementById('removeFileBtn');
-      const commitMsg = document.getElementById('commitMsg');
-      const uploadBtn = document.getElementById('uploadBtn');
-      const btnText = document.getElementById('btnText');
-      const btnSpinner = document.getElementById('btnSpinner');
-      const statusBox = document.getElementById('statusBox');
+    (() => {
+      const el = (id) => document.getElementById(id);
+      const inpRepo = el('inpRepo'), ddRepo = el('ddRepo'), btnClear = el('btnClear'), wrapRepo = el('wrapRepo');
+      const inpPath = el('inpPath'), inpMsg = el('inpMsg');
+      const zone = el('zone'), card = el('card'), fname = el('fname'), fsize = el('fsize'), btnDel = el('btnDel'), inpFile = el('inpFile');
+      const btnUp = el('btnUp'), msg = el('msg');
 
-      let selectedFile = null;
-      let selectedRepo = null;
-      let searchTimer = null;
-      let dropdownIndex = -1;
+      let file = null, selRepo = null, timer = null, di = -1;
 
-      // 格式化文件大小
-      function fmtSize(bytes) {
-        if (bytes < 1024) return bytes + ' B';
-        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+      const fmt = b => b < 1024 ? b + ' B' : b < 1048576 ? (b / 1024).toFixed(1) + ' KB' : (b / 1048576).toFixed(1) + ' MB';
+
+      function showMsg(t, cls) { msg.textContent = t; msg.className = 'msg on ' + cls; }
+      function hideMsg() { msg.className = 'msg'; msg.textContent = ''; }
+
+      function check() {
+        btnUp.disabled = !(inpRepo.value.trim() && file && inpPath.value.trim());
       }
 
-      // 显示状态
-      function showStatus(msg, type) {
-        statusBox.textContent = msg;
-        statusBox.className = 'status show ' + type;
-      }
+      function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
-      function hideStatus() {
-        statusBox.className = 'status';
-        statusBox.textContent = '';
-      }
-
-      // 更新上传按钮状态
-      function updateUploadBtn() {
-        const repo = repoInput.value.trim();
-        uploadBtn.disabled = !(repo && selectedFile && pathInput.value.trim());
-      }
-
-      // Base64 编码文件（浏览器端）
-      function fileToBase64(file) {
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => {
-            const base64 = reader.result.split(',')[1];
-            resolve(base64);
-          };
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
-      }
-
-      // 搜索仓库
-      async function searchRepos(query) {
+      async function search(q) {
         try {
-          const res = await fetch('/api/repos?q=' + encodeURIComponent(query));
-          if (!res.ok) throw new Error('搜索失败');
-          const data = await res.json();
-          return data.repos || [];
-        } catch (e) {
-          console.error('搜索仓库失败:', e);
-          return [];
-        }
+          const r = await fetch('/api/repos?q=' + encodeURIComponent(q));
+          if (!r.ok) throw 0;
+          return (await r.json()).repos || [];
+        } catch (_) { return []; }
       }
 
-      // 渲染仓库下拉
-      function renderDropdown(repos) {
-        repoDropdown.innerHTML = '';
-        dropdownIndex = -1;
-
-        if (repos.length === 0) {
-          repoDropdown.innerHTML = '<div class="dropdown-item" style="color:#8b949e;cursor:default;">未找到仓库</div>';
-          repoDropdown.classList.add('show');
-          return;
-        }
-
-        repos.forEach((repo, i) => {
-          const div = document.createElement('div');
-          div.className = 'dropdown-item';
-          div.innerHTML = `
-            <span class="repo-name">${escapeHtml(repo.full_name)}</span>
-            ${repo.private ? '<span class="repo-private">🔒</span>' : ''}
-            <span class="repo-desc">${escapeHtml(repo.description || '')}</span>
-          `;
-          div.addEventListener('mousedown', (e) => {
-            e.preventDefault();
-            selectRepo(repo);
-          });
-          div.dataset.index = i;
-          repoDropdown.appendChild(div);
+      function render(repos) {
+        ddRepo.innerHTML = ''; di = -1;
+        if (!repos.length) { ddRepo.innerHTML = '<div class="dropdown-item" style="color:#aaa;cursor:default">无结果</div>'; ddRepo.classList.add('on'); return; }
+        repos.forEach((r, i) => {
+          const d = document.createElement('div');
+          d.className = 'dropdown-item';
+          d.innerHTML = `<span class="dn">${esc(r.full_name)}</span>${r.private ? ' 🔒' : ''}<span class="dd">${esc(r.description || '')}</span>`;
+          d.addEventListener('mousedown', e => { e.preventDefault(); pick(r); });
+          d.dataset.idx = i;
+          ddRepo.appendChild(d);
         });
-
-        repoDropdown.classList.add('show');
+        ddRepo.classList.add('on');
       }
 
-      function escapeHtml(str) {
-        const div = document.createElement('div');
-        div.textContent = str;
-        return div.innerHTML;
+      function pick(r) {
+        selRepo = r;
+        inpRepo.value = r.full_name;
+        ddRepo.classList.remove('on');
+        btnClear.classList.add('on');
+        check();
       }
 
-      function selectRepo(repo) {
-        selectedRepo = repo;
-        repoInput.value = repo.full_name;
-        branchInput.value = repo.default_branch || 'main';
-        repoDropdown.classList.remove('show');
-        clearRepoBtn.classList.add('visible');
-        updateUploadBtn();
+      inpRepo.addEventListener('input', function () {
+        const v = this.value.trim();
+        btnClear.classList.toggle('on', v.length > 0);
+        selRepo = null;
+        if (v.includes('/') && v.length > 2) {
+          clearTimeout(timer);
+          timer = setTimeout(async () => render(await search(v)), 350);
+        } else if (!v) {
+          clearTimeout(timer);
+          timer = setTimeout(async () => { const r = await search(''); if (r.length) render(r); }, 300);
+        } else { ddRepo.classList.remove('on'); }
+        check();
+      });
+
+      inpRepo.addEventListener('focus', () => {
+        if (!inpRepo.value.trim()) search('').then(r => { if (r.length) render(r); });
+      });
+
+      inpRepo.addEventListener('keydown', function (e) {
+        const items = ddRepo.querySelectorAll('.dropdown-item:not([style*="cursor:default"])');
+        if (!ddRepo.classList.contains('on') || !items.length) return;
+        if (e.key === 'ArrowDown') { e.preventDefault(); di = Math.min(di + 1, items.length - 1); items.forEach((it, i) => { it.classList.toggle('sel', i === di); if (i === di) it.scrollIntoView({ block: 'nearest' }); }); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); di = Math.max(di - 1, 0); items.forEach((it, i) => { it.classList.toggle('sel', i === di); if (i === di) it.scrollIntoView({ block: 'nearest' }); }); }
+        else if (e.key === 'Enter' && di >= 0) { e.preventDefault(); items[di].click(); }
+        else if (e.key === 'Escape') { ddRepo.classList.remove('on'); }
+      });
+
+      document.addEventListener('click', e => { if (!wrapRepo.contains(e.target)) ddRepo.classList.remove('on'); });
+
+      btnClear.addEventListener('click', () => {
+        inpRepo.value = ''; selRepo = null; ddRepo.classList.remove('on');
+        btnClear.classList.remove('on'); check(); inpRepo.focus();
+      });
+
+      // 文件
+      zone.addEventListener('click', () => inpFile.click());
+      inpFile.addEventListener('change', () => { if (inpFile.files.length) setFile(inpFile.files[0]); });
+
+      zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('over'); });
+      zone.addEventListener('dragleave', e => { e.preventDefault(); zone.classList.remove('over'); });
+      zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('over'); if (e.dataTransfer.files.length) setFile(e.dataTransfer.files[0]); });
+
+      function setFile(f) {
+        file = f; fname.textContent = f.name; fsize.textContent = fmt(f.size);
+        card.classList.add('on'); zone.classList.add('done');
+        if (!inpPath.value.trim()) inpPath.value = f.name;
+        check();
       }
 
-      // 仓库输入事件
-      repoInput.addEventListener('input', function () {
-        const val = this.value.trim();
-        clearRepoBtn.classList.toggle('visible', val.length > 0);
-        selectedRepo = null;
-
-        if (val.includes('/') && val.length > 2) {
-          clearTimeout(searchTimer);
-          searchTimer = setTimeout(async () => {
-            const repos = await searchRepos(val);
-            renderDropdown(repos);
-          }, 400);
-        } else if (val.length === 0) {
-          clearTimeout(searchTimer);
-          searchTimer = setTimeout(async () => {
-            const repos = await searchRepos('');
-            if (repos.length > 0) renderDropdown(repos);
-          }, 300);
-        } else {
-          repoDropdown.classList.remove('show');
-        }
-        updateUploadBtn();
+      btnDel.addEventListener('click', e => {
+        e.stopPropagation(); file = null; inpFile.value = '';
+        card.classList.remove('on'); zone.classList.remove('done'); check();
       });
 
-      repoInput.addEventListener('focus', function () {
-        const val = this.value.trim();
-        if (!val) {
-          searchRepos('').then(repos => {
-            if (repos.length > 0) renderDropdown(repos);
-          });
-        }
-      });
-
-      // 键盘导航
-      repoInput.addEventListener('keydown', function (e) {
-        const items = repoDropdown.querySelectorAll('.dropdown-item:not([style*="cursor:default"])');
-        if (!repoDropdown.classList.contains('show') || items.length === 0) return;
-
-        if (e.key === 'ArrowDown') {
-          e.preventDefault();
-          dropdownIndex = Math.min(dropdownIndex + 1, items.length - 1);
-          updateDropdownActive(items);
-        } else if (e.key === 'ArrowUp') {
-          e.preventDefault();
-          dropdownIndex = Math.max(dropdownIndex - 1, 0);
-          updateDropdownActive(items);
-        } else if (e.key === 'Enter' && dropdownIndex >= 0) {
-          e.preventDefault();
-          items[dropdownIndex].click();
-        } else if (e.key === 'Escape') {
-          repoDropdown.classList.remove('show');
-        }
-      });
-
-      function updateDropdownActive(items) {
-        items.forEach((item, i) => {
-          item.classList.toggle('active', i === dropdownIndex);
-          if (i === dropdownIndex) item.scrollIntoView({ block: 'nearest' });
-        });
-      }
-
-      // 点击外部关闭下拉
-      document.addEventListener('click', function (e) {
-        if (!document.getElementById('repoInputWrapper').contains(e.target)) {
-          repoDropdown.classList.remove('show');
-        }
-      });
-
-      clearRepoBtn.addEventListener('click', function () {
-        repoInput.value = '';
-        selectedRepo = null;
-        repoDropdown.classList.remove('show');
-        this.classList.remove('visible');
-        updateUploadBtn();
-        repoInput.focus();
-      });
-
-      // 文件选择
-      uploadZone.addEventListener('click', function () {
-        fileInput.click();
-      });
-
-      fileInput.addEventListener('change', function () {
-        if (this.files.length > 0) {
-          setFile(this.files[0]);
-        }
-      });
-
-      // 拖拽上传
-      uploadZone.addEventListener('dragover', function (e) {
-        e.preventDefault();
-        this.classList.add('dragover');
-      });
-
-      uploadZone.addEventListener('dragleave', function (e) {
-        e.preventDefault();
-        this.classList.remove('dragover');
-      });
-
-      uploadZone.addEventListener('drop', function (e) {
-        e.preventDefault();
-        this.classList.remove('dragover');
-        if (e.dataTransfer.files.length > 0) {
-          setFile(e.dataTransfer.files[0]);
-        }
-      });
-
-      function setFile(file) {
-        selectedFile = file;
-        fileName.textContent = file.name;
-        fileSize.textContent = fmtSize(file.size);
-        fileInfo.classList.add('show');
-        uploadZone.classList.add('has-file');
-
-        // 自动填充路径（如果为空）
-        if (!pathInput.value.trim()) {
-          pathInput.value = file.name;
-        }
-
-        updateUploadBtn();
-      }
-
-      removeFileBtn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        selectedFile = null;
-        fileInput.value = '';
-        fileInfo.classList.remove('show');
-        uploadZone.classList.remove('has-file');
-        updateUploadBtn();
-      });
-
-      // 路径输入
-      pathInput.addEventListener('input', updateUploadBtn);
-      branchInput.addEventListener('input', updateUploadBtn);
+      inpPath.addEventListener('input', check);
 
       // 上传
-      uploadBtn.addEventListener('click', async function () {
-        if (this.disabled || !selectedFile) return;
-
-        hideStatus();
-        this.disabled = true;
-        this.classList.add('loading');
-        btnText.textContent = '上传中...';
-        btnSpinner.style.display = 'inline-block';
+      btnUp.addEventListener('click', async function () {
+        if (this.disabled || !file) return;
+        hideMsg(); this.disabled = true; this.classList.add('busy');
+        this.innerHTML = '上传中<span class="spinner"></span>';
 
         try {
-          const fileBase64 = await fileToBase64(selectedFile);
-          const payload = {
-            repo: repoInput.value.trim(),
-            branch: branchInput.value.trim() || 'main',
-            path: pathInput.value.trim(),
-            content: fileBase64,
-            message: commitMsg.value.trim() || 'Upload file via API',
-          };
-
+          const b64 = await new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(r.result.split(',')[1]); r.onerror = no; r.readAsDataURL(file); });
           const res = await fetch('/api/upload', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
+            body: JSON.stringify({
+              repo: inpRepo.value.trim(),
+              branch: 'main',
+              path: inpPath.value.trim(),
+              content: b64,
+              message: inpMsg.value.trim() || 'Upload via API'
+            })
           });
-
-          const result = await res.json();
-
+          const d = await res.json();
           if (res.ok) {
-            const actionText = result.overwritten ? '已覆盖' : '已创建';
-            let msg = `✅ 文件 ${actionText}：${result.path}`;
-            if (result.url) {
-              msg += ` — <a href="${result.url}" target="_blank">查看文件</a>`;
-            }
-            showStatus(msg, 'success');
+            const a = d.overwritten ? '已覆盖' : '已创建';
+            showMsg(`文件${a}：${d.path}${d.url ? ` — <a href="${d.url}" target="_blank">查看 &nearr;</a>` : ''}`, 'ok');
           } else {
-            showStatus('❌ 上传失败：' + (result.error || '未知错误'), 'error');
+            showMsg('上传失败：' + (d.error || '未知错误'), 'err');
           }
         } catch (e) {
-          showStatus('❌ 网络错误：' + e.message, 'error');
+          showMsg('网络错误：' + e.message, 'err');
         } finally {
-          this.disabled = false;
-          this.classList.remove('loading');
-          btnText.textContent = '上传文件';
-          btnSpinner.style.display = 'none';
-          updateUploadBtn();
+          this.disabled = false; this.classList.remove('busy');
+          this.textContent = '上传'; check();
         }
       });
     })();
